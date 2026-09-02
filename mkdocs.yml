@@ -77,6 +77,7 @@ nav:
       - "14. Runtime Tuples and Lists: Finishing the Parameter Surface": part2/14-tuples-lists-and-the-parameter-surface.md
       - "15. Reshaping and Recombining Tiles": part2/15-reshaping-and-recombining-tiles.md
       - "16. Scans, Reductions, and a Second Confound": part2/16-scans-reductions-and-a-second-confound.md
+      - "17. Elementwise Math and the Limits of Rounding Mode": part2/17-elementwise-math-and-the-limits-of-rounding-mode.md
 
 extra:
   social:
