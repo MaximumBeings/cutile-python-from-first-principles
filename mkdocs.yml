@@ -74,6 +74,7 @@ nav:
       - "11. Composing Kernels: Tile Functions and Inlining": part2/11-composing-kernels-tile-functions-and-inlining.md
       - "12. Symbol Names and Multi-Kernel Artifacts": part2/12-symbol-names-and-multi-kernel-artifacts.md
       - "13. Multi-Pass Kernels: Loops and Traversal": part2/13-multi-pass-kernels-loops-and-traversal.md
+      - "14. Runtime Tuples and Lists: Finishing the Parameter Surface": part2/14-tuples-lists-and-the-parameter-surface.md
 
 extra:
   social:
