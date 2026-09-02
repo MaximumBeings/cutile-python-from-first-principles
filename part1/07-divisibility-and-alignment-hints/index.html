@@ -1,0 +1,1994 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Writing Portable, Tile-Based GPU Kernels in NVIDIA cuTile Python, One Layer at a Time">
+      
+      
+        <meta name="author" content="Oluwaseyi Awoga">
+      
+      
+      
+        <link rel="prev" href="../06-the-array-tile-contract/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>7. Divisibility and Alignment Hints - CuTile Python From First Principles — Under Development</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-7-divisibility-and-alignment-hints" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-header__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CuTile Python From First Principles — Under Development
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              7. Divisibility and Alignment Hints
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-nav__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    CuTile Python From First Principles — Under Development
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 0 — cuTile Foundations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 0 — cuTile Foundations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/01-arrays-tiles-and-the-kernel-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Arrays, Tiles, and the Kernel Boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/02-kernel-parameterization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Kernel Parameterization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/03-tiled-views-shape-and-memory-layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Tiled Views, Shape, and Memory Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/04-the-cutile-programming-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. The cuTile Programming Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/05-targeting-hardware-and-ahead-of-time-compilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. Targeting Hardware and Ahead-of-Time Compilation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 1 — Kernel-Array Interface
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 1 — Kernel-Array Interface
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-the-array-tile-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6. The Array-Tile Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7. Divisibility and Alignment Hints
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7. Divisibility and Alignment Hints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#71-stride_constant-a-real-layout-guarantee-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 stride_constant: A Real Layout Guarantee [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 stride_constant: A Real Layout Guarantee [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-711-unknown-contiguous-and-strided" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.1.1 — unknown, contiguous, and strided
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#72-shape_constant-a-genuine-trade-off-and-a-real-restriction-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 shape_constant: A Genuine Trade-off, and a Real Restriction [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 shape_constant: A Genuine Trade-off, and a Real Restriction [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-721-a-known-shape-and-the-v1-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.2.1 — a known shape, and the v1 boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#73-stride_divisible_by-and-shape_divisible_by-weaker-than-constant-still-real-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 stride_divisible_by and shape_divisible_by: Weaker Than Constant, Still Real [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.3 stride_divisible_by and shape_divisible_by: Weaker Than Constant, Still Real [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-731-stride_divisible_by-tested-at-several-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.3.1 — stride_divisible_by, tested at several values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-732-shape_divisible_by-where-the-specific-factor-does-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.3.2 — shape_divisible_by, where the specific factor does matter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#74-base_addr_divisible_by-alignment-on-the-array-as-a-whole-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 base_addr_divisible_by: Alignment on the Array as a Whole [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.4 base_addr_divisible_by: Alignment on the Array as a Whole [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-741-three-alignment-guarantees-genuinely-compiled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.4.1 — three alignment guarantees, genuinely compiled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-742-shape_constant-and-shape_divisible_by-checked-for-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.4.2 — shape_constant and shape_divisible_by, checked for consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_stride_constantpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_stride_constant.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_shape_constantpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_shape_constant.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_stride_divisible_bypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_stride_divisible_by.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_shape_divisible_bypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_shape_divisible_by.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-05_base_addr_divisible_bypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 05_base_addr_divisible_by.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-06_shape_constant_divisibility_compatibilitypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 06_shape_constant_divisibility_compatibility.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#71-stride_constant-a-real-layout-guarantee-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 stride_constant: A Real Layout Guarantee [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 stride_constant: A Real Layout Guarantee [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-711-unknown-contiguous-and-strided" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.1.1 — unknown, contiguous, and strided
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#72-shape_constant-a-genuine-trade-off-and-a-real-restriction-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 shape_constant: A Genuine Trade-off, and a Real Restriction [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 shape_constant: A Genuine Trade-off, and a Real Restriction [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-721-a-known-shape-and-the-v1-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.2.1 — a known shape, and the v1 boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#73-stride_divisible_by-and-shape_divisible_by-weaker-than-constant-still-real-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 stride_divisible_by and shape_divisible_by: Weaker Than Constant, Still Real [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.3 stride_divisible_by and shape_divisible_by: Weaker Than Constant, Still Real [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-731-stride_divisible_by-tested-at-several-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.3.1 — stride_divisible_by, tested at several values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-732-shape_divisible_by-where-the-specific-factor-does-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.3.2 — shape_divisible_by, where the specific factor does matter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#74-base_addr_divisible_by-alignment-on-the-array-as-a-whole-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 base_addr_divisible_by: Alignment on the Array as a Whole [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.4 base_addr_divisible_by: Alignment on the Array as a Whole [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-741-three-alignment-guarantees-genuinely-compiled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.4.1 — three alignment guarantees, genuinely compiled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-742-shape_constant-and-shape_divisible_by-checked-for-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 7.4.2 — shape_constant and shape_divisible_by, checked for consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_stride_constantpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_stride_constant.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_shape_constantpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_shape_constant.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_stride_divisible_bypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_stride_divisible_by.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_shape_divisible_bypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_shape_divisible_by.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-05_base_addr_divisible_bypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 05_base_addr_divisible_by.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-06_shape_constant_divisibility_compatibilitypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 06_shape_constant_divisibility_compatibility.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="chapter-7-divisibility-and-alignment-hints">Chapter 7: Divisibility and Alignment Hints<a class="headerlink" href="#chapter-7-divisibility-and-alignment-hints" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>"Chapter 6 asked what the compiler has to assume when it's told almost nothing about an array's memory. This chapter asks the opposite question: what does it cost, and what does it buy, when a kernel author tells the compiler something true and specific — that a stride is always 1, that a shape is always a multiple of 8, that a base address always lands on a 256-byte boundary? Every one of those is a genuine, checkable claim about real memory this book still can't allocate. What can be verified, without a GPU, is whether making that claim changes what the compiler actually produces — and by how much."</p>
+</blockquote>
+<p><strong>What you will understand by the end of this chapter:</strong></p>
+<ul>
+<li>That <code>stride_constant</code> — a real, per-dimension guarantee about an array's exact stride — measurably shrinks compiled output for the one case ordinary tensor libraries actually produce: a C-contiguous last dimension</li>
+<li>That <code>shape_constant</code>, <code>stride_divisible_by</code>, <code>shape_divisible_by</code>, and <code>base_addr_divisible_by</code> each genuinely change compiled output too, but not always in the direction "more information, smaller code" would predict — reported honestly, the same way Chapter 2's <code>opt_level</code> and Chapter 6's <code>alias_groups</code> were</li>
+<li>That <code>shape_constant</code> is validated against <code>shape_divisible_by</code> for genuine mathematical consistency at <code>ArrayConstraint</code> construction — a real, checkable claim ("1024 is divisible by 7") rejected immediately when it's false</li>
+<li>That <code>shape_constant</code>, like Chapter 5's tuple-shaped <code>ct.Constant</code>, requires <code>cutile_python_v2</code> and is genuinely rejected under <code>v1</code></li>
+</ul>
+<p><strong>What you need to know first:</strong></p>
+<ul>
+<li>Chapter 6's <code>ArrayConstraint(dtype, ndim, index_dtype=..., stride_lower_bound_incl=..., alias_groups=..., may_alias_internally=...)</code> fields, and its finding that a compiled-output difference doesn't always move in the direction naive intuition predicts.</li>
+<li>Chapter 5's <code>cutile_python_v1</code>/<code>v2</code> calling-convention split and its genuine rejection of a capability <code>v1</code> doesn't support.</li>
+</ul>
+<h2 id="71-stride_constant-a-real-layout-guarantee-foundational">7.1 <code>stride_constant</code>: A Real Layout Guarantee <code>[FOUNDATIONAL]</code><a class="headerlink" href="#71-stride_constant-a-real-layout-guarantee-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition">Intuition<a class="headerlink" href="#intuition" title="Permanent link">&para;</a></h3>
+<p>Chapter 6's <code>stride_lower_bound_incl</code> only ever bounded a stride — never pinned it. <code>stride_constant</code> goes further: it lets a kernel author declare a dimension's stride as one exact, known value. The most common real case is the one this section tests directly — a freshly-allocated, row-major array, whose last dimension genuinely always has stride 1.</p>
+<h3 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h3>
+<p><code>stride_constant</code> takes a per-dimension sequence of optional integers, or <code>None</code> if no dimension's stride is known. A value of <code>1</code> for the last dimension is documented as the case that "can enable certain optimizations of loads and stores" — the layout NumPy, CuPy, and PyTorch all produce by default for a new, C-contiguous array.</p>
+<h3 id="worked-example-711-unknown-contiguous-and-strided">Worked Example 7.1.1 — unknown, contiguous, and strided<a class="headerlink" href="#worked-example-711-unknown-contiguous-and-strided" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">stride_const</span><span class="p">):</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="n">stride_constant</span><span class="o">=</span><span class="n">stride_const</span><span class="p">,</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="p">)</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="c1"># stride_constant lets a kernel author hand the compiler a real, known</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1"># stride value per dimension -- [1] declares a C-contiguous last axis,</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># the layout ordinary tensor libraries produce for a fresh array.</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">sc</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;None (unknown)&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;[1] (contiguous)&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="s2">&quot;[2] (strided by 2)&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">])]:</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="p">)</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stride_constant=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>01_stride_constant.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python3<span class="w"> </span>01_stride_constant.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>stride_constant=None (unknown): 24736 cubin bytes
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>stride_constant=[1] (contiguous): 23840 cubin bytes
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>stride_constant=[2] (strided by 2): 24096 cubin bytes
+</code></pre></div>
+<p>Declaring the real, contiguous case genuinely produces the smallest output of the three — 896 bytes smaller than leaving the stride unknown, and smaller still than declaring a real but non-unit stride of <code>2</code>. This is the one result in this chapter that matches the "more known information, less generated code" intuition directly: a stride the compiler knows is always exactly <code>1</code> needs no runtime stride multiplication for address computation at all, an optimization a stride of <code>2</code> — known or not — still can't skip.</p>
+<h2 id="72-shape_constant-a-genuine-trade-off-and-a-real-restriction-foundational">7.2 <code>shape_constant</code>: A Genuine Trade-off, and a Real Restriction <code>[FOUNDATIONAL]</code><a class="headerlink" href="#72-shape_constant-a-genuine-trade-off-and-a-real-restriction-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_1">Intuition<a class="headerlink" href="#intuition_1" title="Permanent link">&para;</a></h3>
+<p><code>shape_constant</code> looks like the natural extension of Section 7.1's idea to an array's length instead of its stride — and the documentation says plainly it requires <code>cutile_python_v2</code>, the same restriction Chapter 5 found for a tuple-shaped <code>ct.Constant</code>. What's worth testing directly is whether pinning a shape actually shrinks compiled output the way pinning a stride did.</p>
+<h3 id="background_1">Background<a class="headerlink" href="#background_1" title="Permanent link">&para;</a></h3>
+<p><code>shape_constant</code> takes a per-dimension sequence of optional integers, declaring an array's exact length along that axis. Unlike <code>stride_constant</code>, it's explicitly documented as requiring <code>cutile_python_v2</code> — a real capability boundary, checkable the same way Chapter 5 checked <code>v1</code>'s rejection of tuple parameters.</p>
+<h3 id="worked-example-721-a-known-shape-and-the-v1-boundary">Worked Example 7.2.1 — a known shape, and the <code>v1</code> boundary<a class="headerlink" href="#worked-example-721-a-known-shape-and-the-v1-boundary" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">shape_const</span><span class="p">):</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="n">shape_constant</span><span class="o">=</span><span class="n">shape_const</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="p">)</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="n">v2</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">()</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="n">v1</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v1</span><span class="p">()</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="c1"># shape_constant hands the compiler a known, fixed length for a</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="c1"># dimension -- here, that the array genuinely always has 1024 elements.</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">shc</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;None (unknown)&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;[1024] (known)&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1024</span><span class="p">])]:</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">shc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">shc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">shc</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">v2</span><span class="p">,</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="p">)</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shape_constant=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (v2): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="c1"># Documented to require cutile_python_v2, the same restriction Chapter 5</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="c1"># found for tuple-shaped ct.Constant parameters.</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">]),</span> <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">]),</span> <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">]),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">v1</span><span class="p">,</span>
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>    <span class="p">)</span>
+<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;v1 with shape_constant: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>02_shape_constant.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python3<span class="w"> </span>02_shape_constant.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>shape_constant=None (unknown) (v2): 24736 cubin bytes
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>shape_constant=[1024] (known) (v2): 25264 cubin bytes
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>v1 with shape_constant: ValueError: Static array shapes are not supported by calling convention cutile_python_v1; version &gt;= 2 is required
+</code></pre></div>
+<p><code>v1</code>'s rejection is exactly what the documentation predicts, worded almost identically to Chapter 5's tuple-parameter rejection: <code>shape_constant</code> is a <code>v2</code>-only capability, confirmed directly.</p>
+<blockquote>
+<p><code>[COMMON TRAP]</code> The byte-count result is not what Section 7.1's <code>stride_constant</code> result would suggest. Pinning a <em>known, exact shape</em> genuinely produced <em>more</em> compiled code than leaving it unknown — 528 bytes more — the opposite direction from pinning a known, exact stride. This book draws only the conclusion its own evidence supports: <code>shape_constant</code> is a real, measurable trade-off, not a straightforward size reduction, and this chapter reports that honestly rather than assuming every "more information" hint moves compiled output the same direction the way Chapter 2's <code>opt_level</code> and Chapter 6's <code>alias_groups</code> findings already cautioned against.</p>
+</blockquote>
+<h2 id="73-stride_divisible_by-and-shape_divisible_by-weaker-than-constant-still-real-foundational">7.3 <code>stride_divisible_by</code> and <code>shape_divisible_by</code>: Weaker Than Constant, Still Real <code>[FOUNDATIONAL]</code><a class="headerlink" href="#73-stride_divisible_by-and-shape_divisible_by-weaker-than-constant-still-real-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_2">Intuition<a class="headerlink" href="#intuition_2" title="Permanent link">&para;</a></h3>
+<p><code>stride_constant</code> and <code>shape_constant</code> both pin a dimension to one exact value. <code>stride_divisible_by</code> and <code>shape_divisible_by</code> make a weaker, more broadly true claim instead: not "this stride is exactly 4," but "this stride, whatever it is, is a multiple of 4." That weaker claim is still real information — this section measures what it's actually worth.</p>
+<h3 id="background_2">Background<a class="headerlink" href="#background_2" title="Permanent link">&para;</a></h3>
+<p>Both hints are documented in array elements, not bytes, and both default to <code>1</code> — no assumption. A <code>float16</code> array declared <code>stride_divisible_by=8</code> is really claiming 16-byte divisibility, since each element is 2 bytes wide; the compiler is free to use that weaker guarantee for whatever optimizations don't need the exact value, such as choosing a wider vectorized memory instruction.</p>
+<h3 id="worked-example-731-stride_divisible_by-tested-at-several-values">Worked Example 7.3.1 — <code>stride_divisible_by</code>, tested at several values<a class="headerlink" href="#worked-example-731-stride_divisible_by-tested-at-several-values" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">):</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="n">stride_divisible_by</span><span class="o">=</span><span class="n">div</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="p">)</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="c1"># stride_divisible_by declares that a dimension&#39;s stride, whatever its</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="c1"># exact value, is a multiple of the given factor -- weaker than</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="c1"># stride_constant, but still a real assumption the compiler can use.</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">div</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;1 (no assumption)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;4&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;8&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)]:</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>    <span class="p">)</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stride_divisible_by=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>03_stride_divisible_by.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python3<span class="w"> </span>03_stride_divisible_by.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>stride_divisible_by=1 (no assumption): 24736 cubin bytes
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>stride_divisible_by=2: 24864 cubin bytes
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>stride_divisible_by=4: 24864 cubin bytes
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>stride_divisible_by=8: 24864 cubin bytes
+</code></pre></div>
+<p>Any divisibility assumption beyond <code>1</code> costs the identical 128 bytes here, regardless of whether that assumption is <code>2</code>, <code>4</code>, or <code>8</code> — a real, measured fact this book reports without inventing a mechanism it didn't independently confirm: something about <em>having a divisibility assumption at all</em> apparently changes what gets generated for this kernel, while the specific factor chosen, among the three values tested, doesn't.</p>
+<h3 id="worked-example-732-shape_divisible_by-where-the-specific-factor-does-matter">Worked Example 7.3.2 — <code>shape_divisible_by</code>, where the specific factor does matter<a class="headerlink" href="#worked-example-732-shape_divisible_by-where-the-specific-factor-does-matter" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">):</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>        <span class="n">shape_divisible_by</span><span class="o">=</span><span class="n">div</span><span class="p">,</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    <span class="p">)</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="c1"># shape_divisible_by declares that a dimension&#39;s length is a multiple of</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="c1"># the given factor, without pinning it to one exact value the way</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="c1"># shape_constant does.</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">div</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;1 (no assumption)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;256 (matches tile_size)&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>                   <span class="p">(</span><span class="s2">&quot;7 (does not divide 256 evenly)&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">)]:</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>    <span class="p">)</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shape_divisible_by=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>04_shape_divisible_by.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python3<span class="w"> </span>04_shape_divisible_by.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>shape_divisible_by=1 (no assumption): 24736 cubin bytes
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>shape_divisible_by=256 (matches tile_size): 24992 cubin bytes
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>shape_divisible_by=7 (does not divide 256 evenly): 24864 cubin bytes
+</code></pre></div>
+<p>Unlike <code>stride_divisible_by</code>, <code>shape_divisible_by</code>'s specific factor genuinely does change the byte count here: <code>256</code> (a multiple of the kernel's own <code>tile_size</code> constant) and <code>7</code> (which isn't) produce two different, non-<code>1</code> byte counts, not one shared value the way <code>stride_divisible_by</code>'s <code>2</code>/<code>4</code>/<code>8</code> did. This book reports the contrast as observed — two hints that sound structurally identical don't necessarily behave identically under the same compiler, for the same kernel.</p>
+<h2 id="74-base_addr_divisible_by-alignment-on-the-array-as-a-whole-foundational">7.4 <code>base_addr_divisible_by</code>: Alignment on the Array as a Whole <code>[FOUNDATIONAL]</code><a class="headerlink" href="#74-base_addr_divisible_by-alignment-on-the-array-as-a-whole-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_3">Intuition<a class="headerlink" href="#intuition_3" title="Permanent link">&para;</a></h3>
+<p>Every hint so far in this chapter has been per-dimension. <code>base_addr_divisible_by</code> is different: it's a single value per array, declaring an alignment guarantee — in bytes — on where the array's data genuinely starts in memory, not on any one axis's shape or stride.</p>
+<h3 id="background_3">Background<a class="headerlink" href="#background_3" title="Permanent link">&para;</a></h3>
+<p><code>base_addr_divisible_by</code> defaults to <code>1</code> (no assumption) and is given directly in bytes, unlike <code>stride_divisible_by</code>/<code>shape_divisible_by</code>'s element-based units. A real allocator commonly guarantees some minimum alignment for any allocation it returns — 16, 128, or 256 bytes are typical real values — which is exactly the kind of fact this parameter exists to hand the compiler.</p>
+<h3 id="worked-example-741-three-alignment-guarantees-genuinely-compiled">Worked Example 7.4.1 — three alignment guarantees, genuinely compiled<a class="headerlink" href="#worked-example-741-three-alignment-guarantees-genuinely-compiled" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">):</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        <span class="n">base_addr_divisible_by</span><span class="o">=</span><span class="n">div</span><span class="p">,</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="p">)</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="c1"># base_addr_divisible_by declares an alignment guarantee on the array&#39;s</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="c1"># starting address itself, in bytes -- a single value per array, not</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="c1"># per-dimension the way the other hints in this chapter are.</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">div</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;1 (no assumption)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;16 (bytes)&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;256 (bytes)&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)]:</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>    <span class="p">)</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;base_addr_divisible_by=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>05_base_addr_divisible_by.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python3<span class="w"> </span>05_base_addr_divisible_by.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>base_addr_divisible_by=1 (no assumption): 24736 cubin bytes
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>base_addr_divisible_by=16 (bytes): 25120 cubin bytes
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>base_addr_divisible_by=256 (bytes): 25264 cubin bytes
+</code></pre></div>
+<p>Both alignment guarantees genuinely compile to more code than making no assumption at all, and <code>256</code> compiles to more than <code>16</code> — a real, monotonic relationship in this chapter's measurements, but reported as exactly that and nothing more: this book's evidence doesn't say <em>why</em> a stronger alignment guarantee costs more code here, only that it genuinely, reproducibly does for this kernel.</p>
+<h3 id="worked-example-742-shape_constant-and-shape_divisible_by-checked-for-consistency">Worked Example 7.4.2 — <code>shape_constant</code> and <code>shape_divisible_by</code>, checked for consistency<a class="headerlink" href="#worked-example-742-shape_constant-and-shape_divisible_by-checked-for-consistency" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">shape_const</span><span class="p">,</span> <span class="n">shape_div</span><span class="p">):</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>        <span class="n">shape_constant</span><span class="o">=</span><span class="n">shape_const</span><span class="p">,</span> <span class="n">shape_divisible_by</span><span class="o">=</span><span class="n">shape_div</span><span class="p">,</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="p">)</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="c1"># Documented: when shape_constant[i] is set, shape_divisible_by[i] is</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="c1"># redundant and must be compatible with it -- 1024 is genuinely divisible</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="c1"># by 8, so this is accepted even though shape_divisible_by is then</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="c1"># ignored in favor of the exact known value.</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>    <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">],</span> <span class="mi">8</span><span class="p">)</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compatible (shape_constant=1024, shape_divisible_by=8): accepted&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;compatible: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="c1"># 1024 is genuinely not divisible by 7 -- a real, checkable</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="c1"># inconsistency between the two hints, rejected at construction.</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>    <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">],</span> <span class="mi">7</span><span class="p">)</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;incompatible (shape_constant=1024, shape_divisible_by=7): accepted (unexpected)&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;incompatible: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>06_shape_constant_divisibility_compatibility.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>python3<span class="w"> </span>06_shape_constant_divisibility_compatibility.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>compatible (shape_constant=1024, shape_divisible_by=8): accepted
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>incompatible: ValueError: shape_constant[0] is set to 1024, which is not divisible by 7
+</code></pre></div>
+<p>This is documented behavior, genuinely confirmed: <code>shape_divisible_by</code> becomes redundant once <code>shape_constant</code> pins an exact value, but redundant doesn't mean unchecked — supplying two hints that mathematically contradict each other (<code>1024</code> is not a multiple of <code>7</code>) is caught immediately at <code>ArrayConstraint</code> construction, the same construction-time validation Chapter 5 found for a signature's <code>calling_convention</code> mismatch and Chapter 6 found for <code>index_dtype</code>.</p>
+<h2 id="complete-runnable-code">Complete Runnable Code<a class="headerlink" href="#complete-runnable-code" title="Permanent link">&para;</a></h2>
+<h3 id="file-01_stride_constantpy">File: <code>01_stride_constant.py</code><a class="headerlink" href="#file-01_stride_constantpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">stride_const</span><span class="p">):</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>        <span class="n">stride_constant</span><span class="o">=</span><span class="n">stride_const</span><span class="p">,</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>    <span class="p">)</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="c1"># stride_constant lets a kernel author hand the compiler a real, known</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="c1"># stride value per dimension -- [1] declares a C-contiguous last axis,</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a><span class="c1"># the layout ordinary tensor libraries produce for a fresh array.</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">sc</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;None (unknown)&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;[1] (contiguous)&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="s2">&quot;[2] (strided by 2)&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">])]:</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>    <span class="p">)</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stride_constant=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python3<span class="w"> </span>01_stride_constant.py
+</code></pre></div>
+<h3 id="file-02_shape_constantpy">File: <code>02_shape_constant.py</code><a class="headerlink" href="#file-02_shape_constantpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">shape_const</span><span class="p">):</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>        <span class="n">shape_constant</span><span class="o">=</span><span class="n">shape_const</span><span class="p">,</span>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>    <span class="p">)</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a><span class="n">v2</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">()</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a><span class="n">v1</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v1</span><span class="p">()</span>
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a><span class="c1"># shape_constant hands the compiler a known, fixed length for a</span>
+<a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a><span class="c1"># dimension -- here, that the array genuinely always has 1024 elements.</span>
+<a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">shc</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;None (unknown)&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;[1024] (known)&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1024</span><span class="p">])]:</span>
+<a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-20-24" name="__codelineno-20-24" href="#__codelineno-20-24"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">shc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">shc</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">shc</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">v2</span><span class="p">,</span>
+<a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a>    <span class="p">)</span>
+<a id="__codelineno-20-27" name="__codelineno-20-27" href="#__codelineno-20-27"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shape_constant=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (v2): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a>
+<a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a><span class="c1"># Documented to require cutile_python_v2, the same restriction Chapter 5</span>
+<a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a><span class="c1"># found for tuple-shaped ct.Constant parameters.</span>
+<a id="__codelineno-20-33" name="__codelineno-20-33" href="#__codelineno-20-33"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-20-34" name="__codelineno-20-34" href="#__codelineno-20-34"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-20-35" name="__codelineno-20-35" href="#__codelineno-20-35"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">]),</span> <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">]),</span> <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">]),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-20-36" name="__codelineno-20-36" href="#__codelineno-20-36"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">v1</span><span class="p">,</span>
+<a id="__codelineno-20-37" name="__codelineno-20-37" href="#__codelineno-20-37"></a>    <span class="p">)</span>
+<a id="__codelineno-20-38" name="__codelineno-20-38" href="#__codelineno-20-38"></a><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-20-39" name="__codelineno-20-39" href="#__codelineno-20-39"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;v1 with shape_constant: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>python3<span class="w"> </span>02_shape_constant.py
+</code></pre></div>
+<h3 id="file-03_stride_divisible_bypy">File: <code>03_stride_divisible_by.py</code><a class="headerlink" href="#file-03_stride_divisible_bypy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">):</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>        <span class="n">stride_divisible_by</span><span class="o">=</span><span class="n">div</span><span class="p">,</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>    <span class="p">)</span>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="c1"># stride_divisible_by declares that a dimension&#39;s stride, whatever its</span>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="c1"># exact value, is a multiple of the given factor -- weaker than</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a><span class="c1"># stride_constant, but still a real assumption the compiler can use.</span>
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">div</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;1 (no assumption)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;4&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;8&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)]:</span>
+<a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a>    <span class="p">)</span>
+<a id="__codelineno-22-25" name="__codelineno-22-25" href="#__codelineno-22-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-22-26" name="__codelineno-22-26" href="#__codelineno-22-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-27" name="__codelineno-22-27" href="#__codelineno-22-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stride_divisible_by=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>python3<span class="w"> </span>03_stride_divisible_by.py
+</code></pre></div>
+<h3 id="file-04_shape_divisible_bypy">File: <code>04_shape_divisible_by.py</code><a class="headerlink" href="#file-04_shape_divisible_bypy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">):</span>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>        <span class="n">shape_divisible_by</span><span class="o">=</span><span class="n">div</span><span class="p">,</span>
+<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>    <span class="p">)</span>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>
+<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a><span class="c1"># shape_divisible_by declares that a dimension&#39;s length is a multiple of</span>
+<a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a><span class="c1"># the given factor, without pinning it to one exact value the way</span>
+<a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a><span class="c1"># shape_constant does.</span>
+<a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">div</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;1 (no assumption)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;256 (matches tile_size)&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+<a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a>                   <span class="p">(</span><span class="s2">&quot;7 (does not divide 256 evenly)&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">)]:</span>
+<a id="__codelineno-24-22" name="__codelineno-24-22" href="#__codelineno-24-22"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-24-23" name="__codelineno-24-23" href="#__codelineno-24-23"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-24-24" name="__codelineno-24-24" href="#__codelineno-24-24"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-24-25" name="__codelineno-24-25" href="#__codelineno-24-25"></a>    <span class="p">)</span>
+<a id="__codelineno-24-26" name="__codelineno-24-26" href="#__codelineno-24-26"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-24-27" name="__codelineno-24-27" href="#__codelineno-24-27"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-24-28" name="__codelineno-24-28" href="#__codelineno-24-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shape_divisible_by=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>python3<span class="w"> </span>04_shape_divisible_by.py
+</code></pre></div>
+<h3 id="file-05_base_addr_divisible_bypy">File: <code>05_base_addr_divisible_by.py</code><a class="headerlink" href="#file-05_base_addr_divisible_bypy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">):</span>
+<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>        <span class="n">base_addr_divisible_by</span><span class="o">=</span><span class="n">div</span><span class="p">,</span>
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a>    <span class="p">)</span>
+<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a>
+<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a><span class="c1"># base_addr_divisible_by declares an alignment guarantee on the array&#39;s</span>
+<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="c1"># starting address itself, in bytes -- a single value per array, not</span>
+<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a><span class="c1"># per-dimension the way the other hints in this chapter are.</span>
+<a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">div</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;1 (no assumption)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;16 (bytes)&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;256 (bytes)&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)]:</span>
+<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="n">div</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a>    <span class="p">)</span>
+<a id="__codelineno-26-25" name="__codelineno-26-25" href="#__codelineno-26-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;base_addr_divisible_by=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>python3<span class="w"> </span>05_base_addr_divisible_by.py
+</code></pre></div>
+<h3 id="file-06_shape_constant_divisibility_compatibilitypy">File: <code>06_shape_constant_divisibility_compatibility.py</code><a class="headerlink" href="#file-06_shape_constant_divisibility_compatibilitypy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">shape_const</span><span class="p">,</span> <span class="n">shape_div</span><span class="p">):</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>        <span class="n">shape_constant</span><span class="o">=</span><span class="n">shape_const</span><span class="p">,</span> <span class="n">shape_divisible_by</span><span class="o">=</span><span class="n">shape_div</span><span class="p">,</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>    <span class="p">)</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="c1"># Documented: when shape_constant[i] is set, shape_divisible_by[i] is</span>
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="c1"># redundant and must be compatible with it -- 1024 is genuinely divisible</span>
+<a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="c1"># by 8, so this is accepted even though shape_divisible_by is then</span>
+<a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="c1"># ignored in favor of the exact known value.</span>
+<a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a>    <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">],</span> <span class="mi">8</span><span class="p">)</span>
+<a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compatible (shape_constant=1024, shape_divisible_by=8): accepted&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;compatible: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a>
+<a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a><span class="c1"># 1024 is genuinely not divisible by 7 -- a real, checkable</span>
+<a id="__codelineno-28-21" name="__codelineno-28-21" href="#__codelineno-28-21"></a><span class="c1"># inconsistency between the two hints, rejected at construction.</span>
+<a id="__codelineno-28-22" name="__codelineno-28-22" href="#__codelineno-28-22"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-28-23" name="__codelineno-28-23" href="#__codelineno-28-23"></a>    <span class="n">array_param</span><span class="p">([</span><span class="mi">1024</span><span class="p">],</span> <span class="mi">7</span><span class="p">)</span>
+<a id="__codelineno-28-24" name="__codelineno-28-24" href="#__codelineno-28-24"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;incompatible (shape_constant=1024, shape_divisible_by=7): accepted (unexpected)&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-25" name="__codelineno-28-25" href="#__codelineno-28-25"></a><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-28-26" name="__codelineno-28-26" href="#__codelineno-28-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;incompatible: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>python3<span class="w"> </span>06_shape_constant_divisibility_compatibility.py
+</code></pre></div>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>Every divisibility and alignment hint this chapter tested genuinely changed compiled output, but not all in the same direction, and this book reports each honestly rather than forcing a single tidy story. <code>stride_constant=[1]</code> — a real C-contiguous last dimension, the layout ordinary tensor libraries actually produce — genuinely shrank compiled output, the one result matching naive "more information, less code" intuition directly. <code>shape_constant</code>, by contrast, genuinely grew compiled output when a shape was pinned exactly, and is confirmed, like Chapter 5's tuple-shaped <code>ct.Constant</code>, to require <code>cutile_python_v2</code> and be rejected under <code>v1</code>. <code>stride_divisible_by</code> produced one identical byte count across three different nontrivial factors (<code>2</code>, <code>4</code>, <code>8</code>), while <code>shape_divisible_by</code>'s specific factor did change the result — two structurally similar hints, genuinely confirmed to behave differently for this kernel. <code>base_addr_divisible_by</code> grew compiled output monotonically with a stronger alignment guarantee. And <code>shape_constant</code>/<code>shape_divisible_by</code> are validated together for real mathematical consistency at <code>ArrayConstraint</code> construction — a genuinely incompatible pair (<code>1024</code> and <code>7</code>) rejected immediately, before a signature is ever built or a kernel is compiled.</p>
+<h2 id="self-check-questions">Self-Check Questions<a class="headerlink" href="#self-check-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>stride_constant=[1]</code> produced smaller compiled output than leaving the stride unknown, but <code>shape_constant=[1024]</code> produced larger compiled output than leaving the shape unknown. What does this pair of results tell you about assuming every "the compiler now knows more" hint shrinks generated code?</li>
+<li><code>stride_divisible_by</code>'s three tested nontrivial values (<code>2</code>, <code>4</code>, <code>8</code>) all produced the identical byte count, while <code>shape_divisible_by</code>'s tested values (<code>256</code> and <code>7</code>) produced two different byte counts. Is it safe to conclude that <code>stride_divisible_by</code>'s specific factor never matters, based on this chapter's evidence alone? Why or why not?</li>
+<li>Why does <code>shape_constant</code> require <code>cutile_python_v2</code>, based on what Chapter 5 already established about that calling convention?</li>
+<li><code>array_param([1024], 7)</code> in Worked Example 7.4.2 is rejected with a <code>ValueError</code> at <code>ArrayConstraint</code> construction, before any <code>KernelSignature</code> or <code>export_kernel</code> call. What relationship between <code>shape_constant</code> and <code>shape_divisible_by</code> does that rejection genuinely verify?</li>
+<li>This chapter measured <code>base_addr_divisible_by=256</code> compiling to more code than <code>base_addr_divisible_by=1</code>. Would it be accurate for this book to state "declaring stronger alignment on an array's base address always increases cuTile Python's compiled output"? Why or why not?</li>
+</ol>
+<h2 id="where-we-go-next">Where We Go Next<a class="headerlink" href="#where-we-go-next" title="Permanent link">&para;</a></h2>
+<p>This chapter and the one before it treated an array's shape, stride, alignment, and aliasing as facts declared once, at compile time, and trusted from then on — exactly the trust a real launch would have to honor or violate. Chapter 8 turns to what happens at a tile's actual edges: masking a load or store against a boundary the tile's shape doesn't evenly divide, the padding-mode groundwork Chapter 3 introduced, and the rounding modes that govern how a value that doesn't fit exactly gets converted when precision, not just shape, is the boundary being crossed.</p>
+<h2 id="worked-solutions">Worked Solutions<a class="headerlink" href="#worked-solutions" title="Permanent link">&para;</a></h2>
+<p><strong>1.</strong> It tells you the direction of a "more compile-time information" hint's effect on output size isn't something you can assume in advance for every field — each one has to be tested on its own terms, the same lesson Chapter 2's <code>opt_level</code> and Chapter 6's <code>alias_groups</code> already established for different fields. <code>stride_constant</code> and <code>shape_constant</code> sound structurally parallel (both pin a per-dimension value to a known constant), but this chapter's own measurements show they don't move compiled output the same direction for this kernel.</p>
+<p><strong>2.</strong> No — three tested values producing the same result doesn't establish that no value ever would. <code>stride_divisible_by</code>'s specific factor genuinely might matter for a different kernel, a different array dtype, or a divisor outside the small range this chapter actually tested (<code>2</code>, <code>4</code>, <code>8</code>); this chapter's evidence only supports "these three specific factors produced identical output for this specific kernel," not a general claim about every possible factor.</p>
+<p><strong>3.</strong> Chapter 5 established that <code>cutile_python_v1</code> rejects tuple-shaped <code>ct.Constant</code> parameters, accepting only <code>cutile_python_v2</code> for that capability. <code>shape_constant</code> is a structurally similar addition — a compile-time-fixed, structured piece of information about a kernel parameter that the original <code>v1</code> calling convention's argument-passing scheme was never built to carry — so it falls under the same <code>v2</code>-only restriction, for the same underlying reason.</p>
+<p><strong>4.</strong> It verifies that <code>shape_constant</code> and <code>shape_divisible_by</code>, when both set for the same dimension, are checked for genuine mathematical consistency with each other — not merely accepted as two independent, unrelated hints. <code>1024</code> is not evenly divisible by <code>7</code>, a real, checkable arithmetic fact, and cuTile Python catches that inconsistency immediately rather than silently ignoring <code>shape_divisible_by</code> (as the documentation says happens when the two hints agree) or letting a genuinely contradictory pair of assumptions reach the compiler.</p>
+<p><strong>5.</strong> No. This chapter's evidence supports "for this specific kernel, <code>base_addr_divisible_by</code> values of <code>1</code>, <code>16</code>, and <code>256</code> produced these three specific, increasing byte counts" — a measured fact about one kernel, one dtype, and three specific alignment values. Generalizing that into "always increases" for every kernel, every array dtype, and every alignment value would be exactly the kind of untested extrapolation this book's verification discipline exists to avoid, the same caution Chapter 2 applied to <code>opt_level</code> and this chapter already applied to <code>shape_divisible_by</code>'s factor-dependence.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../06-the-array-tile-contract/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 6. The Array-Tile Contract">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                6. The Array-Tile Contract
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Oluwaseyi Awoga
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/maximumbeings" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
