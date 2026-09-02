@@ -1,0 +1,1817 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Writing Portable, Tile-Based GPU Kernels in NVIDIA cuTile Python, One Layer at a Time">
+      
+      
+        <meta name="author" content="Oluwaseyi Awoga">
+      
+      
+      
+        <link rel="prev" href="../03-tiled-views-shape-and-memory-layout/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>4. The cuTile Programming Model - CuTile Python From First Principles — Under Development</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-4-the-cutile-programming-model" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-header__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CuTile Python From First Principles — Under Development
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              4. The cuTile Programming Model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-nav__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    CuTile Python From First Principles — Under Development
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 0 — cuTile Foundations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 0 — cuTile Foundations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-arrays-tiles-and-the-kernel-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Arrays, Tiles, and the Kernel Boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-kernel-parameterization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Kernel Parameterization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-tiled-views-shape-and-memory-layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Tiled Views, Shape, and Memory Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. The cuTile Programming Model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. The cuTile Programming Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#41-the-grid-ctbid-and-ctnum_blocks-across-up-to-three-axes-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 The Grid: ct.bid and ct.num_blocks Across Up to Three Axes [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 The Grid: ct.bid and ct.num_blocks Across Up to Three Axes [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-411-a-2d-grid-linearized-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.1.1 — a 2D grid, linearized by hand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-412-a-fourth-axis-genuinely-rejected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.1.2 — a fourth axis, genuinely rejected
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42-host-side-grid-sizing-composing-ctcdiv-per-axis-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Host-Side Grid Sizing: Composing ct.cdiv Per Axis [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Host-Side Grid Sizing: Composing ct.cdiv Per Axis [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-421-a-2d-grid-shape-computed-and-printed-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.2.1 — a 2D grid shape, computed and printed directly
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#43-explicit-execution-space-annotations-ctfunction-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Explicit Execution-Space Annotations: ct.function [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 Explicit Execution-Space Annotations: ct.function [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-431-the-explicit-default-called-from-host-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.1 — the explicit default, called from host code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-432-the-same-default-called-from-tile-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.2 — the same default, called from tile code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-433-hosttrue-called-from-tile-code-anyway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.3 — host=True, called from tile code anyway
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-434-tilefalse-also-called-from-tile-code-anyway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.4 — tile=False, also called from tile code anyway
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_grid_bid_num_blocks_2dpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_grid_bid_num_blocks_2d.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_bid_axis_out_of_rangepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_bid_axis_out_of_range.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_host_grid_sizing_2dpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_host_grid_sizing_2d.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_function_default_host_call_failspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_function_default_host_call_fails.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-05_function_default_from_tilepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 05_function_default_from_tile.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-06_function_host_true_called_from_tilepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 06_function_host_true_called_from_tile.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-07_function_tile_false_no_effectpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 07_function_tile_false_no_effect.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#41-the-grid-ctbid-and-ctnum_blocks-across-up-to-three-axes-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 The Grid: ct.bid and ct.num_blocks Across Up to Three Axes [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 The Grid: ct.bid and ct.num_blocks Across Up to Three Axes [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-411-a-2d-grid-linearized-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.1.1 — a 2D grid, linearized by hand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-412-a-fourth-axis-genuinely-rejected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.1.2 — a fourth axis, genuinely rejected
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42-host-side-grid-sizing-composing-ctcdiv-per-axis-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Host-Side Grid Sizing: Composing ct.cdiv Per Axis [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Host-Side Grid Sizing: Composing ct.cdiv Per Axis [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-421-a-2d-grid-shape-computed-and-printed-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.2.1 — a 2D grid shape, computed and printed directly
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#43-explicit-execution-space-annotations-ctfunction-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Explicit Execution-Space Annotations: ct.function [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 Explicit Execution-Space Annotations: ct.function [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-431-the-explicit-default-called-from-host-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.1 — the explicit default, called from host code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-432-the-same-default-called-from-tile-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.2 — the same default, called from tile code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-433-hosttrue-called-from-tile-code-anyway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.3 — host=True, called from tile code anyway
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-434-tilefalse-also-called-from-tile-code-anyway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 4.3.4 — tile=False, also called from tile code anyway
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_grid_bid_num_blocks_2dpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_grid_bid_num_blocks_2d.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_bid_axis_out_of_rangepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_bid_axis_out_of_range.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_host_grid_sizing_2dpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_host_grid_sizing_2d.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_function_default_host_call_failspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_function_default_host_call_fails.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-05_function_default_from_tilepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 05_function_default_from_tile.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-06_function_host_true_called_from_tilepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 06_function_host_true_called_from_tile.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-07_function_tile_false_no_effectpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 07_function_tile_false_no_effect.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="chapter-4-the-cutile-programming-model">Chapter 4: The cuTile Programming Model<a class="headerlink" href="#chapter-4-the-cutile-programming-model" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>"<code>ct.bid(0)</code> answers one question and one question only: which block, along one axis, am I? Everything else — how many blocks exist, what a helper function is allowed to be called from, how a grid's shape gets decided in the first place — is a separate question this chapter answers on purpose, one at a time, rather than letting them stay implicit the way the first three chapters' single-axis, single-file examples let them stay."</p>
+</blockquote>
+<p><strong>What you will understand by the end of this chapter:</strong></p>
+<ul>
+<li>That a cuTile Python grid has at most three axes, and that <code>ct.bid(axis)</code>/<code>ct.num_blocks(axis)</code> are compiler-checked against exactly that boundary — genuinely confirmed by a rejected fourth axis, not merely documented</li>
+<li>How a grid's shape is actually decided: composed on the host, one axis at a time, from the same <code>ct.cdiv</code> this book has used since Chapter 1 — before any kernel, compiler, or device is involved</li>
+<li>What <code>ct.function(host=..., tile=...)</code> is documented to express about where a helper function may be called from, and — genuinely tested against <code>cuda-tile</code> 1.5.0 — exactly how much of that the compiler actually enforces today</li>
+</ul>
+<p><strong>What you need to know first:</strong></p>
+<ul>
+<li>Chapters 1-3's <code>@ct.kernel</code>/<code>ct.launch</code> boundary, <code>ct.bid(0)</code> used along a single axis, and <code>ct.compilation.export_kernel</code> as this book's driver-free verification path.</li>
+<li>Chapter 1's discovery that an un-annotated helper function called from tile code becomes tile code too, and that calling a genuinely tile-only function directly from host code raises a <code>RuntimeError</code>. This chapter generalizes both findings under <code>ct.function</code>'s explicit vocabulary.</li>
+</ul>
+<h2 id="41-the-grid-ctbid-and-ctnum_blocks-across-up-to-three-axes-foundational">4.1 The Grid: <code>ct.bid</code> and <code>ct.num_blocks</code> Across Up to Three Axes <code>[FOUNDATIONAL]</code><a class="headerlink" href="#41-the-grid-ctbid-and-ctnum_blocks-across-up-to-three-axes-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition">Intuition<a class="headerlink" href="#intuition" title="Permanent link">&para;</a></h3>
+<p>Every kernel this book has compiled so far called <code>ct.bid(0)</code> exactly once and never asked how many blocks the grid actually had — one axis was always enough for a 1D array. A grid is not restricted to one axis, though, any more than CUDA C++'s <code>blockIdx</code>/<code>gridDim</code> are restricted to <code>.x</code>: cuTile Python's grid is up to three-dimensional, and a block can read both its own position and the grid's total shape along any of those three axes from inside tile code.</p>
+<h3 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h3>
+<p><code>ct.bid(axis)</code> returns the current block's index along the given axis; <code>ct.num_blocks(axis)</code> returns how many blocks the grid has along that same axis. Both take <code>axis</code> as a compile-time constant restricted to exactly 0, 1, or 2 — a cuTile Python grid cannot have a fourth dimension, and the compiler checks that boundary itself rather than leaving it to fail unpredictably at launch time.</p>
+<h3 id="worked-example-411-a-2d-grid-linearized-by-hand">Worked Example 4.1.1 — a 2D grid, linearized by hand<a class="headerlink" href="#worked-example-411-a-2d-grid-linearized-by-hand" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">grid_probe</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="c1"># ct.bid(axis) reads this block&#39;s own index along one grid axis;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="c1"># ct.num_blocks(axis) reads how many blocks the grid has along that</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="c1"># same axis. Both accept axis 0, 1, or 2 -- a cuTile Python grid is</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="c1"># at most three-dimensional, the same shape CUDA C++&#39;s blockIdx/gridDim</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="c1"># come in.</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">bidx</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">bidy</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">nx</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">num_blocks</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="n">ny</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">num_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="c1"># A genuine use of both: turn a 2D block coordinate into the same</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="c1"># flat, row-major index numpy.ravel_multi_index would produce.</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">linear</span> <span class="o">=</span> <span class="n">bidy</span> <span class="o">*</span> <span class="n">nx</span> <span class="o">+</span> <span class="n">bidx</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="n">linear</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">linear</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="p">)</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="p">)</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">grid_probe</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>01_grid_bid_num_blocks_2d.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python3<span class="w"> </span>01_grid_bid_num_blocks_2d.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>compiled: 591 bytes
+</code></pre></div>
+<p><code>ct.full(shape, fill_value, dtype)</code> — used here for the first time in this book — creates a <code>Tile</code> filled with a single value, which is how <code>linear</code>, an ordinary scalar computed from two <code>ct.bid</code> calls and two <code>ct.num_blocks</code> calls, gets turned back into something <code>TiledView.store</code> can write. The kernel compiles cleanly, which is this book's genuine confirmation that both functions accept axis 1 as readily as axis 0 — nothing about them is specific to a single-axis grid.</p>
+<h3 id="worked-example-412-a-fourth-axis-genuinely-rejected">Worked Example 4.1.2 — a fourth axis, genuinely rejected<a class="headerlink" href="#worked-example-412-a-fourth-axis-genuinely-rejected" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">grid_probe</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="c1"># A cuTile Python grid has at most three axes -- 0, 1, and 2. Asking</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="c1"># for a fourth is not a runtime question the hardware could still</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="c1"># answer; it&#39;s rejected at compile time, before any kernel logic runs.</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">bidw</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">bidw</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="p">)</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="p">)</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">grid_probe</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>02_bid_axis_out_of_range.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python3<span class="w"> </span>02_bid_axis_out_of_range.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>TileTypeError: Axis must be 0, 1, or 2, but 3 was given.
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  &quot;/tmp/ch4/02_bid_axis_out_of_range.py&quot;, line 9, col 12-20, in grid_probe:
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        bidw = ct.bid(3)
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>               ^^^^^^^^^
+</code></pre></div>
+<blockquote>
+<p><code>[COMMON TRAP]</code> This book independently confirmed the same rejection for <code>ct.bid(-1)</code> as well — the boundary is checked on both sides, not just against values too large. The error is a <code>TileTypeError</code>, the same exception class Chapters 1 and 2 raised for a raw-tile <code>if</code> condition and a non-constant tile shape: cuTile Python treats an axis outside <code>{0, 1, 2}</code> as a genuine type violation in the caller's code, not a value that could ever be legal for some other grid shape.</p>
+</blockquote>
+<h2 id="42-host-side-grid-sizing-composing-ctcdiv-per-axis-foundational">4.2 Host-Side Grid Sizing: Composing <code>ct.cdiv</code> Per Axis <code>[FOUNDATIONAL]</code><a class="headerlink" href="#42-host-side-grid-sizing-composing-ctcdiv-per-axis-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_1">Intuition<a class="headerlink" href="#intuition_1" title="Permanent link">&para;</a></h3>
+<p><code>ct.launch(stream, grid, kernel, kernel_args)</code> takes its grid shape as an ordinary Python tuple of up to three integers, decided entirely on the host, before the kernel or the compiler are involved at all. Chapter 1 established <code>ct.cdiv</code> as a genuine, host-callable ceiling-division helper for exactly this purpose along one axis; a real 2D problem just means calling it once per axis and combining the results into the tuple <code>ct.launch</code> expects.</p>
+<h3 id="background_1">Background<a class="headerlink" href="#background_1" title="Permanent link">&para;</a></h3>
+<p>Nothing about computing a multi-axis grid shape needs tile code, a kernel, or a compiler — it's the same ordinary Python arithmetic Chapter 1 ran directly on the host, extended to more than one axis. A function that only ever gets called from host code, and never from inside a kernel, stays host code with no annotation required at all, by the same rule Chapter 1 established for un-annotated helpers in the other direction.</p>
+<h3 id="worked-example-421-a-2d-grid-shape-computed-and-printed-directly">Worked Example 4.2.1 — a 2D grid shape, computed and printed directly<a class="headerlink" href="#worked-example-421-a-2d-grid-shape-computed-and-printed-directly" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># A plain, undecorated Python function. Chapter 1 established that an</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># undecorated function called *from* tile code becomes tile code too --</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># but this one is never called from a kernel anywhere in this file, so it</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1"># stays exactly what it looks like: ordinary host-side Python, with no</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># compiler involved at all.</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">grid_shape_2d</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">tn</span><span class="p">):</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="k">return</span> <span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">cdiv</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">tm</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">cdiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">tn</span><span class="p">))</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="c1"># A problem of shape (1024, 768), tiled (32, 64) per block.</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="n">grid</span> <span class="o">=</span> <span class="n">grid_shape_2d</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">768</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;grid shape:&quot;</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="c1"># A second, uneven problem size -- (1000, 700) doesn&#39;t divide evenly by</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="c1"># either tile dimension, which is exactly the case ct.cdiv&#39;s ceiling</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="c1"># division exists for.</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="n">grid2</span> <span class="o">=</span> <span class="n">grid_shape_2d</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;grid shape (uneven):&quot;</span><span class="p">,</span> <span class="n">grid2</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>03_host_grid_sizing_2d.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python3<span class="w"> </span>03_host_grid_sizing_2d.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>grid shape: (32, 12)
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>grid shape (uneven): (32, 11)
+</code></pre></div>
+<p><code>1024 / 32 = 32</code> exactly, and <code>768 / 64 = 12</code> exactly — both axes divide evenly, so ceiling division and ordinary division agree. The second call is the case that actually needs a ceiling: <code>1000 / 32 = 31.25</code>, rounded up to <code>32</code>, and <code>700 / 64 = 10.9375</code>, rounded up to <code>11</code>. This is the exact tuple this book would pass as <code>ct.launch</code>'s <code>grid</code> argument if a real device were present — genuinely computed here, even though the launch itself remains <code>ct.launch</code>'s territory, which Chapter 5 addresses directly.</p>
+<h2 id="43-explicit-execution-space-annotations-ctfunction-foundational">4.3 Explicit Execution-Space Annotations: <code>ct.function</code> <code>[FOUNDATIONAL]</code><a class="headerlink" href="#43-explicit-execution-space-annotations-ctfunction-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_2">Intuition<a class="headerlink" href="#intuition_2" title="Permanent link">&para;</a></h3>
+<p>Chapter 1 discovered, somewhat by accident, that an un-annotated helper called from a kernel becomes tile code automatically, and that a genuinely tile-only function raises a <code>RuntimeError</code> when called directly from host code. <code>ct.function(host=..., tile=...)</code> is cuTile Python's vocabulary for saying which of those two spaces a function is meant to be callable from, on purpose, instead of leaving it to fall out of how the function happens to get called. This section states what the decorator is documented to mean, then genuinely tests how much of that cuTile Python 1.5.0 actually enforces.</p>
+<h3 id="background_2">Background<a class="headerlink" href="#background_2" title="Permanent link">&para;</a></h3>
+<p><code>ct.function(func=None, *, host=False, tile=True)</code> marks a function's intended execution space: <code>host=True</code> means it may be called from host code, <code>tile=True</code> (the default) means it may be called from tile code. With no arguments at all, <code>@ct.function</code> denotes a tile-only function — the same default an un-annotated helper already had once it was called from tile code, just written down explicitly instead of inferred.</p>
+<h3 id="worked-example-431-the-explicit-default-called-from-host-code">Worked Example 4.3.1 — the explicit default, called from host code<a class="headerlink" href="#worked-example-431-the-explicit-default-called-from-host-code" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># ct.function(), called with no arguments, is equivalent to the implicit</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># default every un-annotated helper already had in Chapters 1-3: host=False,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># tile=True. Spelling it out explicitly doesn&#39;t change what it does --</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># it changes what the reader can see was intended.</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">()</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">quad_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">4</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="c1"># Calling it directly from host code, with no kernel and no compiler</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="c1"># anywhere in the picture, is still rejected -- the same RuntimeError</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="c1"># Chapter 1 first raised by accident is now raised on purpose.</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">quad_it</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>04_function_default_host_call_fails.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python3<span class="w"> </span>04_function_default_host_call_fails.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>RuntimeError: Tile functions can only be called from tile code.
+</code></pre></div>
+<p>This is the identical message, and the identical exception type, Chapter 1 first encountered without asking for it. <code>ct.function()</code>'s default confirms it deliberately: a function annotated <code>host=False</code> (the default) genuinely cannot be called from host code at all, whether the annotation was written on purpose or inherited implicitly from being called inside a kernel somewhere else in the file.</p>
+<h3 id="worked-example-432-the-same-default-called-from-tile-code">Worked Example 4.3.2 — the same default, called from tile code<a class="headerlink" href="#worked-example-432-the-same-default-called-from-tile-code" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">()</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">quad_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">4</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">uses_it</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="n">quadrupled</span> <span class="o">=</span> <span class="n">quad_it</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">quadrupled</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="p">)</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="p">)</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">uses_it</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>05_function_default_from_tile.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python3<span class="w"> </span>05_function_default_from_tile.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>compiled: 692 bytes
+</code></pre></div>
+<p>The same <code>quad_it</code>, called the way <code>tile=True</code>'s default actually intends it to be called, compiles without complaint. Between this and Worked Example 4.3.1, <code>ct.function()</code>'s documented default — callable from tile code, not from host code — is genuinely confirmed on both sides.</p>
+<h3 id="worked-example-433-hosttrue-called-from-tile-code-anyway">Worked Example 4.3.3 — <code>host=True</code>, called from tile code anyway<a class="headerlink" href="#worked-example-433-hosttrue-called-from-tile-code-anyway" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># host=True is documented as &quot;whether the function can be called from</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="c1"># host code&quot; -- it says nothing about revoking tile-callability, and this</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># file genuinely tests that: the same function, called from inside a</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># kernel, still compiles.</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tile</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">double_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">uses_it</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>    <span class="n">doubled</span> <span class="o">=</span> <span class="n">double_it</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">doubled</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="p">)</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="p">)</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">uses_it</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>06_function_host_true_called_from_tile.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>python3<span class="w"> </span>06_function_host_true_called_from_tile.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>compiled: 723 bytes
+</code></pre></div>
+<p><code>double_it</code> is annotated <code>host=True, tile=False</code> — on a plain reading, callable from host code and <em>not</em> from tile code. Called from inside <code>uses_it</code>, a real kernel, it compiles cleanly anyway. Reading the installed <code>cuda-tile</code> 1.5.0 package's own decorator implementation directly (without reproducing its source here) confirms why: when <code>host=True</code> is given, <code>ct.function</code> returns the wrapped function completely unchanged — no dispatch wrapper is attached at all. An unwrapped, un-annotated function called from tile code is exactly the case Chapter 1 already established becomes tile code automatically, recursively, with no annotation required — which is precisely what <code>double_it</code> still is, <code>host=True</code> notwithstanding.</p>
+<h3 id="worked-example-434-tilefalse-also-called-from-tile-code-anyway">Worked Example 4.3.4 — <code>tile=False</code>, also called from tile code anyway<a class="headerlink" href="#worked-example-434-tilefalse-also-called-from-tile-code-anyway" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># tile=False, with host left at its own default (False), on paper reads</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="c1"># as &quot;callable from neither space.&quot; What actually happens when a function</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="c1"># carrying it is called from inside a kernel is the point of this file.</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">tile</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">triple_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">3</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">uses_it</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>    <span class="n">tripled</span> <span class="o">=</span> <span class="n">triple_it</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">tripled</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a><span class="p">)</span>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a><span class="p">)</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">uses_it</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>07_function_tile_false_no_effect.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python3<span class="w"> </span>07_function_tile_false_no_effect.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>compiled: 705 bytes
+</code></pre></div>
+<blockquote>
+<p><code>[COMMON TRAP]</code> <code>tile=False</code> reads like the counterpart to <code>tile=True</code>'s default — a way to say "this function may not be called from tile code." It genuinely is not enforced that way in <code>cuda-tile</code> 1.5.0: <code>triple_it</code>, decorated with <code>tile=False</code>, still compiles cleanly when called from inside <code>uses_it</code>. Reading the installed decorator's own implementation directly confirms why, without needing to guess: the <code>tile</code> keyword is accepted and stored nowhere the decorator's own branching logic ever reads back — only the <code>host</code> keyword actually changes what gets returned. This is a fact this book genuinely tested against one specific package version, <code>cuda-tile</code> 1.5.0, not a claim about what any future release does or is documented to guarantee; a later <code>cuda-tile</code> release could enforce <code>tile=False</code> where this one doesn't, and this book would rather report today's real, tested behavior than a guess about tomorrow's.</p>
+</blockquote>
+<h2 id="complete-runnable-code">Complete Runnable Code<a class="headerlink" href="#complete-runnable-code" title="Permanent link">&para;</a></h2>
+<h3 id="file-01_grid_bid_num_blocks_2dpy">File: <code>01_grid_bid_num_blocks_2d.py</code><a class="headerlink" href="#file-01_grid_bid_num_blocks_2dpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">grid_probe</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>    <span class="c1"># ct.bid(axis) reads this block&#39;s own index along one grid axis;</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>    <span class="c1"># ct.num_blocks(axis) reads how many blocks the grid has along that</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>    <span class="c1"># same axis. Both accept axis 0, 1, or 2 -- a cuTile Python grid is</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>    <span class="c1"># at most three-dimensional, the same shape CUDA C++&#39;s blockIdx/gridDim</span>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>    <span class="c1"># come in.</span>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a>    <span class="n">bidx</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a>    <span class="n">bidy</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a>    <span class="n">nx</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">num_blocks</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a>    <span class="n">ny</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">num_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a>    <span class="c1"># A genuine use of both: turn a 2D block coordinate into the same</span>
+<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a>    <span class="c1"># flat, row-major index numpy.ravel_multi_index would produce.</span>
+<a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a>    <span class="n">linear</span> <span class="o">=</span> <span class="n">bidy</span> <span class="o">*</span> <span class="n">nx</span> <span class="o">+</span> <span class="n">bidx</span>
+<a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="n">linear</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">linear</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-21-20" name="__codelineno-21-20" href="#__codelineno-21-20"></a>
+<a id="__codelineno-21-21" name="__codelineno-21-21" href="#__codelineno-21-21"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-21-22" name="__codelineno-21-22" href="#__codelineno-21-22"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-21-23" name="__codelineno-21-23" href="#__codelineno-21-23"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-21-24" name="__codelineno-21-24" href="#__codelineno-21-24"></a><span class="p">)</span>
+<a id="__codelineno-21-25" name="__codelineno-21-25" href="#__codelineno-21-25"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-21-26" name="__codelineno-21-26" href="#__codelineno-21-26"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-21-27" name="__codelineno-21-27" href="#__codelineno-21-27"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-21-28" name="__codelineno-21-28" href="#__codelineno-21-28"></a><span class="p">)</span>
+<a id="__codelineno-21-29" name="__codelineno-21-29" href="#__codelineno-21-29"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-21-30" name="__codelineno-21-30" href="#__codelineno-21-30"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">grid_probe</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-21-31" name="__codelineno-21-31" href="#__codelineno-21-31"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>python3<span class="w"> </span>01_grid_bid_num_blocks_2d.py
+</code></pre></div>
+<h3 id="file-02_bid_axis_out_of_rangepy">File: <code>02_bid_axis_out_of_range.py</code><a class="headerlink" href="#file-02_bid_axis_out_of_rangepy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">grid_probe</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>    <span class="c1"># A cuTile Python grid has at most three axes -- 0, 1, and 2. Asking</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>    <span class="c1"># for a fourth is not a runtime question the hardware could still</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>    <span class="c1"># answer; it&#39;s rejected at compile time, before any kernel logic runs.</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>    <span class="n">bidw</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">bidw</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="p">)</span>
+<a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="p">)</span>
+<a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">grid_probe</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a><span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>python3<span class="w"> </span>02_bid_axis_out_of_range.py
+</code></pre></div>
+<h3 id="file-03_host_grid_sizing_2dpy">File: <code>03_host_grid_sizing_2d.py</code><a class="headerlink" href="#file-03_host_grid_sizing_2dpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="c1"># A plain, undecorated Python function. Chapter 1 established that an</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># undecorated function called *from* tile code becomes tile code too --</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="c1"># but this one is never called from a kernel anywhere in this file, so it</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="c1"># stays exactly what it looks like: ordinary host-side Python, with no</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="c1"># compiler involved at all.</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">grid_shape_2d</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">tn</span><span class="p">):</span>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>    <span class="k">return</span> <span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">cdiv</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">tm</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">cdiv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">tn</span><span class="p">))</span>
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="c1"># A problem of shape (1024, 768), tiled (32, 64) per block.</span>
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="n">grid</span> <span class="o">=</span> <span class="n">grid_shape_2d</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">768</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;grid shape:&quot;</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>
+<a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a><span class="c1"># A second, uneven problem size -- (1000, 700) doesn&#39;t divide evenly by</span>
+<a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a><span class="c1"># either tile dimension, which is exactly the case ct.cdiv&#39;s ceiling</span>
+<a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="c1"># division exists for.</span>
+<a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a><span class="n">grid2</span> <span class="o">=</span> <span class="n">grid_shape_2d</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<a id="__codelineno-25-19" name="__codelineno-25-19" href="#__codelineno-25-19"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;grid shape (uneven):&quot;</span><span class="p">,</span> <span class="n">grid2</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>python3<span class="w"> </span>03_host_grid_sizing_2d.py
+</code></pre></div>
+<h3 id="file-04_function_default_host_call_failspy">File: <code>04_function_default_host_call_fails.py</code><a class="headerlink" href="#file-04_function_default_host_call_failspy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="c1"># ct.function(), called with no arguments, is equivalent to the implicit</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># default every un-annotated helper already had in Chapters 1-3: host=False,</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="c1"># tile=True. Spelling it out explicitly doesn&#39;t change what it does --</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="c1"># it changes what the reader can see was intended.</span>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">()</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">quad_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">4</span>
+<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a>
+<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="c1"># Calling it directly from host code, with no kernel and no compiler</span>
+<a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a><span class="c1"># anywhere in the picture, is still rejected -- the same RuntimeError</span>
+<a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a><span class="c1"># Chapter 1 first raised by accident is now raised on purpose.</span>
+<a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">quad_it</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<a id="__codelineno-27-16" name="__codelineno-27-16" href="#__codelineno-27-16"></a><span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>python3<span class="w"> </span>04_function_default_host_call_fails.py
+</code></pre></div>
+<h3 id="file-05_function_default_from_tilepy">File: <code>05_function_default_from_tile.py</code><a class="headerlink" href="#file-05_function_default_from_tilepy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">()</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">quad_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">4</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">uses_it</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>    <span class="n">quadrupled</span> <span class="o">=</span> <span class="n">quad_it</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+<a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">quadrupled</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a>
+<a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-29-16" name="__codelineno-29-16" href="#__codelineno-29-16"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-29-17" name="__codelineno-29-17" href="#__codelineno-29-17"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-29-18" name="__codelineno-29-18" href="#__codelineno-29-18"></a><span class="p">)</span>
+<a id="__codelineno-29-19" name="__codelineno-29-19" href="#__codelineno-29-19"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-29-20" name="__codelineno-29-20" href="#__codelineno-29-20"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-29-21" name="__codelineno-29-21" href="#__codelineno-29-21"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-29-22" name="__codelineno-29-22" href="#__codelineno-29-22"></a><span class="p">)</span>
+<a id="__codelineno-29-23" name="__codelineno-29-23" href="#__codelineno-29-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-29-24" name="__codelineno-29-24" href="#__codelineno-29-24"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">uses_it</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-29-25" name="__codelineno-29-25" href="#__codelineno-29-25"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>python3<span class="w"> </span>05_function_default_from_tile.py
+</code></pre></div>
+<h3 id="file-06_function_host_true_called_from_tilepy">File: <code>06_function_host_true_called_from_tile.py</code><a class="headerlink" href="#file-06_function_host_true_called_from_tilepy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c1"># host=True is documented as &quot;whether the function can be called from</span>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="c1"># host code&quot; -- it says nothing about revoking tile-callability, and this</span>
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="c1"># file genuinely tests that: the same function, called from inside a</span>
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="c1"># kernel, still compiles.</span>
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tile</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">double_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a>
+<a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">uses_it</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a>    <span class="n">doubled</span> <span class="o">=</span> <span class="n">double_it</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+<a id="__codelineno-31-16" name="__codelineno-31-16" href="#__codelineno-31-16"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-31-17" name="__codelineno-31-17" href="#__codelineno-31-17"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">doubled</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-31-18" name="__codelineno-31-18" href="#__codelineno-31-18"></a>
+<a id="__codelineno-31-19" name="__codelineno-31-19" href="#__codelineno-31-19"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-31-20" name="__codelineno-31-20" href="#__codelineno-31-20"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-31-21" name="__codelineno-31-21" href="#__codelineno-31-21"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-31-22" name="__codelineno-31-22" href="#__codelineno-31-22"></a><span class="p">)</span>
+<a id="__codelineno-31-23" name="__codelineno-31-23" href="#__codelineno-31-23"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-31-24" name="__codelineno-31-24" href="#__codelineno-31-24"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-31-25" name="__codelineno-31-25" href="#__codelineno-31-25"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-31-26" name="__codelineno-31-26" href="#__codelineno-31-26"></a><span class="p">)</span>
+<a id="__codelineno-31-27" name="__codelineno-31-27" href="#__codelineno-31-27"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-31-28" name="__codelineno-31-28" href="#__codelineno-31-28"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">uses_it</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-31-29" name="__codelineno-31-29" href="#__codelineno-31-29"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>python3<span class="w"> </span>06_function_host_true_called_from_tile.py
+</code></pre></div>
+<h3 id="file-07_function_tile_false_no_effectpy">File: <code>07_function_tile_false_no_effect.py</code><a class="headerlink" href="#file-07_function_tile_false_no_effectpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="c1"># tile=False, with host left at its own default (False), on paper reads</span>
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="c1"># as &quot;callable from neither space.&quot; What actually happens when a function</span>
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="c1"># carrying it is called from inside a kernel is the point of this file.</span>
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">tile</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">triple_it</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">3</span>
+<a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>
+<a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">uses_it</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a>    <span class="n">tripled</span> <span class="o">=</span> <span class="n">triple_it</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+<a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>    <span class="n">out_view</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">tiled_view</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+<a id="__codelineno-33-16" name="__codelineno-33-16" href="#__codelineno-33-16"></a>    <span class="n">out_view</span><span class="o">.</span><span class="n">store</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">tripled</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+<a id="__codelineno-33-17" name="__codelineno-33-17" href="#__codelineno-33-17"></a>
+<a id="__codelineno-33-18" name="__codelineno-33-18" href="#__codelineno-33-18"></a><span class="n">array_param</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-33-19" name="__codelineno-33-19" href="#__codelineno-33-19"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a>    <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a><span class="p">)</span>
+<a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-33-23" name="__codelineno-33-23" href="#__codelineno-33-23"></a>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">array_param</span><span class="p">],</span>
+<a id="__codelineno-33-24" name="__codelineno-33-24" href="#__codelineno-33-24"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-33-25" name="__codelineno-33-25" href="#__codelineno-33-25"></a><span class="p">)</span>
+<a id="__codelineno-33-26" name="__codelineno-33-26" href="#__codelineno-33-26"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-33-27" name="__codelineno-33-27" href="#__codelineno-33-27"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">uses_it</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-33-28" name="__codelineno-33-28" href="#__codelineno-33-28"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>python3<span class="w"> </span>07_function_tile_false_no_effect.py
+</code></pre></div>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>A cuTile Python grid is at most three-dimensional: <code>ct.bid(axis)</code> reads a block's own position and <code>ct.num_blocks(axis)</code> reads the grid's total extent along any axis in <code>{0, 1, 2}</code>, both genuinely confirmed compiling together in a real 2D kernel, and both genuinely rejected — with a <code>TileTypeError</code> naming the exact illegal value — for axis <code>3</code> (and, independently confirmed, <code>-1</code>). A grid's shape is decided entirely on the host, before any kernel or compiler is involved, by composing <code>ct.cdiv</code> once per axis — an ordinary Python function needing no annotation at all, since it's never called from inside a kernel. <code>ct.function(host=..., tile=...)</code> is cuTile Python's documented vocabulary for declaring which execution space a helper function belongs to: its default (<code>host=False, tile=True</code>) genuinely matches the implicit behavior Chapter 1 first discovered, confirmed on both sides here — rejected from host code, accepted from tile code. Tested directly against <code>cuda-tile</code> 1.5.0, though, <code>host=True</code> returns a function completely unwrapped rather than restricting it to host-only, and <code>tile=False</code> has no observable effect on whether a function may still be called from inside a kernel — both genuinely confirmed by compiling kernels that call such functions, and both reported as tested facts about one specific package version, not assumptions read off the documentation's prose alone.</p>
+<h2 id="self-check-questions">Self-Check Questions<a class="headerlink" href="#self-check-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>ct.bid(axis)</code> and <code>ct.num_blocks(axis)</code> both restrict <code>axis</code> to <code>{0, 1, 2}</code>. What class of exception does passing <code>3</code> raise, and what does that exception class choice say about how cuTile Python categorizes the mistake?</li>
+<li>Worked Example 4.2.1's <code>grid_shape_2d</code> function has no <code>@ct.function</code> or <code>@ct.kernel</code> decorator at all. Why does it not need one, given that Chapter 1 established that calling an un-annotated function from tile code turns it into tile code?</li>
+<li><code>ct.function()</code>'s documented default is <code>host=False, tile=True</code>. State, precisely, what each half of that default was shown to mean in Worked Examples 4.3.1 and 4.3.2.</li>
+<li>Worked Example 4.3.3 decorates <code>double_it</code> with <code>host=True, tile=False</code>, then calls it from inside a kernel, and it compiles. What does reading the installed decorator's own implementation say actually happens when <code>host=True</code> is passed, and how does that explain the result?</li>
+<li>This chapter reports that <code>tile=False</code> "has no observable effect" in <code>cuda-tile</code> 1.5.0, rather than saying it "doesn't work" or "is broken." Why does the more careful phrasing matter here?</li>
+</ol>
+<h2 id="where-we-go-next">Where We Go Next<a class="headerlink" href="#where-we-go-next" title="Permanent link">&para;</a></h2>
+<p>This chapter treated <code>ct.launch</code>'s grid argument as something computed correctly on the host and then, necessarily, left untested — this book's own environment has no device to launch against. Chapter 5 turns to the other half of that same sentence: exactly what <code>ct.compilation.export_kernel</code> needs and doesn't need to produce real, deployable output, what genuinely distinguishes a <code>cubin</code> from Tile IR bytecode, and what <code>ct.launch</code> would require that <code>export_kernel</code> deliberately does not — the honest boundary this book has approached from one side for four chapters now, examined directly.</p>
+<h2 id="worked-solutions">Worked Solutions<a class="headerlink" href="#worked-solutions" title="Permanent link">&para;</a></h2>
+<p><strong>1.</strong> A <code>TileTypeError</code> — the same exception class Chapters 1 and 2 raised for a raw-tile <code>if</code> condition and a non-constant tile shape. Grouping an out-of-range grid axis under <code>TileTypeError</code> says cuTile Python treats it as a genuine type violation in the caller's code — a value that could never be legal, for any grid, the same way passing a tile where a compile-time constant is required could never be legal — rather than a value that merely happens to be wrong for this particular launch.</p>
+<p><strong>2.</strong> Because it's never called from inside a kernel anywhere in the file. Chapter 1's rule only promotes an un-annotated function to tile code when <em>tile code calls it</em> — <code>grid_shape_2d</code> is called exactly twice, both times directly from ordinary host-level <code>print</code> statements, so the promotion rule never triggers. A function's execution space isn't a property of how it's written; it's a property of who calls it.</p>
+<p><strong>3.</strong> <code>host=False</code> (4.3.1): calling the decorated function directly from host code raises <code>RuntimeError: Tile functions can only be called from tile code.</code> — the same message and exception type Chapter 1 first triggered by accident. <code>tile=True</code> (4.3.2): calling the identical function from inside a real kernel compiles cleanly, with no error at all — confirming the two halves of the documented default independently, one per Worked Example.</p>
+<p><strong>4.</strong> The installed decorator's own implementation, read directly rather than assumed, shows that when <code>host=True</code> is passed, the decorator returns the original function completely unwrapped — no dispatch logic is attached to it at all. An unwrapped, un-annotated function is exactly the case Chapter 1 already showed becomes tile code automatically the moment tile code calls it, recursively, with no annotation required. <code>host=True</code> doesn't grant an <em>additional</em> capability so much as it removes the wrapper that would have otherwise blocked host-side calls — and removing that wrapper happens to leave the function just as callable from tile code as if it had never been decorated.</p>
+<p><strong>5.</strong> Because "doesn't work" or "is broken" would claim the current behavior is a defect cuTile Python did not intend — a claim this book has no basis for making, since it never inspected NVIDIA's design intent, only the installed package's actual, tested behavior on one specific version. "Has no observable effect" states exactly what was genuinely tested — the <code>tile</code> keyword is accepted, and a function decorated with <code>tile=False</code> still compiles when called from tile code — without extending that observation into a claim about intent, future versions, or documentation accuracy this book cannot verify.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../03-tiled-views-shape-and-memory-layout/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 3. Tiled Views, Shape, and Memory Layout">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                3. Tiled Views, Shape, and Memory Layout
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Oluwaseyi Awoga
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/maximumbeings" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
