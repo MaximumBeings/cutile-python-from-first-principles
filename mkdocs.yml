@@ -63,6 +63,7 @@ nav:
       - "2. Kernel Parameterization": part0/02-kernel-parameterization.md
       - "3. Tiled Views, Shape, and Memory Layout": part0/03-tiled-views-shape-and-memory-layout.md
       - "4. The cuTile Programming Model": part0/04-the-cutile-programming-model.md
+      - "5. Targeting Hardware and Ahead-of-Time Compilation": part0/05-targeting-hardware-and-ahead-of-time-compilation.md
 
 extra:
   social:
