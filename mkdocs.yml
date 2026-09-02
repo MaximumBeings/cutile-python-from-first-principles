@@ -76,6 +76,7 @@ nav:
       - "13. Multi-Pass Kernels: Loops and Traversal": part2/13-multi-pass-kernels-loops-and-traversal.md
       - "14. Runtime Tuples and Lists: Finishing the Parameter Surface": part2/14-tuples-lists-and-the-parameter-surface.md
       - "15. Reshaping and Recombining Tiles": part2/15-reshaping-and-recombining-tiles.md
+      - "16. Scans, Reductions, and a Second Confound": part2/16-scans-reductions-and-a-second-confound.md
 
 extra:
   social:
