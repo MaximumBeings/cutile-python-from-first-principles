@@ -69,6 +69,7 @@ nav:
       - "7. Divisibility and Alignment Hints": part1/07-divisibility-and-alignment-hints.md
       - "8. Masking, Padding, and Rounding Modes": part1/08-masking-padding-and-rounding-modes.md
       - "9. The Memory Model": part1/09-the-memory-model.md
+      - "10. Compiler Hints and Autotuning": part1/10-compiler-hints-and-autotuning.md
 
 extra:
   social:
