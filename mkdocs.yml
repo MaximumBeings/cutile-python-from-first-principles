@@ -61,6 +61,7 @@ nav:
   - "Part 0 — cuTile Foundations":
       - "1. Arrays, Tiles, and the Kernel Boundary": part0/01-arrays-tiles-and-the-kernel-boundary.md
       - "2. Kernel Parameterization": part0/02-kernel-parameterization.md
+      - "3. Tiled Views, Shape, and Memory Layout": part0/03-tiled-views-shape-and-memory-layout.md
 
 extra:
   social:
