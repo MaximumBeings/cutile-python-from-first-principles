@@ -1,0 +1,2022 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Writing Portable, Tile-Based GPU Kernels in NVIDIA cuTile Python, One Layer at a Time">
+      
+      
+        <meta name="author" content="Oluwaseyi Awoga">
+      
+      
+      
+        <link rel="prev" href="../01-arrays-tiles-and-the-kernel-boundary/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>2. Kernel Parameterization - CuTile Python From First Principles — Under Development</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-2-kernel-parameterization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-header__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CuTile Python From First Principles — Under Development
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2. Kernel Parameterization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-nav__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    CuTile Python From First Principles — Under Development
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 0 — cuTile Foundations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 0 — cuTile Foundations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-arrays-tiles-and-the-kernel-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Arrays, Tiles, and the Kernel Boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Kernel Parameterization
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Kernel Parameterization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#21-ctconstant-a-contract-checked-in-both-directions-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 ct.Constant: A Contract, Checked in Both Directions [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 ct.Constant: A Contract, Checked in Both Directions [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-211-the-baseline-annotation-and-constraint-agree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.1.1 — the baseline: annotation and constraint agree
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-212-a-genuinely-rejected-mismatch-constant-claimed-never-supplied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.1.2 — a genuinely rejected mismatch: Constant claimed, never supplied
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-213-the-mismatch-in-the-other-direction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.1.3 — the mismatch in the other direction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-why-a-tiles-shape-specifically-has-to-be-constant-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Why a Tile's Shape Specifically Has to Be Constant [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 Why a Tile&#39;s Shape Specifically Has to Be Constant [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-221-a-genuinely-rejected-runtime-tile-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.2.1 — a genuinely rejected runtime tile shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-compile-time-tuples-multi-dimensional-constants-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Compile-Time Tuples: Multi-Dimensional Constants [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 Compile-Time Tuples: Multi-Dimensional Constants [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-231-a-genuine-2d-compile-time-tile-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.3.1 — a genuine 2D compile-time tile shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-one-kernel-many-specializations-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 One Kernel, Many Specializations [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 One Kernel, Many Specializations [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-241-three-tile-sizes-one-export-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.4.1 — three tile sizes, one export call
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ascii-diagram-one-source-several-bundled-specializations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ASCII Diagram — one source, several bundled specializations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25-compilation-options-opt_level-supporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Compilation Options: opt_level [SUPPORTING]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 Compilation Options: opt_level [SUPPORTING]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-251-four-optimization-levels-genuinely-compiled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.5.1 — four optimization levels, genuinely compiled
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_vector_add_with_constantpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_vector_add_with_constant.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_constant_annotation_missingpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_constant_annotation_missing.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_constant_constraint_missingpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_constant_constraint_missing.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_nonconstant_tile_shapepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_nonconstant_tile_shape.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-05_tuple_constant_2d_tilepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 05_tuple_constant_2d_tile.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-06_multi_signature_specializationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 06_multi_signature_specialization.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-07_opt_level_comparisonpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 07_opt_level_comparison.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#21-ctconstant-a-contract-checked-in-both-directions-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 ct.Constant: A Contract, Checked in Both Directions [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 ct.Constant: A Contract, Checked in Both Directions [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-211-the-baseline-annotation-and-constraint-agree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.1.1 — the baseline: annotation and constraint agree
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-212-a-genuinely-rejected-mismatch-constant-claimed-never-supplied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.1.2 — a genuinely rejected mismatch: Constant claimed, never supplied
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-213-the-mismatch-in-the-other-direction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.1.3 — the mismatch in the other direction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-why-a-tiles-shape-specifically-has-to-be-constant-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Why a Tile's Shape Specifically Has to Be Constant [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 Why a Tile&#39;s Shape Specifically Has to Be Constant [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-221-a-genuinely-rejected-runtime-tile-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.2.1 — a genuinely rejected runtime tile shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-compile-time-tuples-multi-dimensional-constants-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Compile-Time Tuples: Multi-Dimensional Constants [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 Compile-Time Tuples: Multi-Dimensional Constants [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-231-a-genuine-2d-compile-time-tile-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.3.1 — a genuine 2D compile-time tile shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-one-kernel-many-specializations-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 One Kernel, Many Specializations [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 One Kernel, Many Specializations [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-241-three-tile-sizes-one-export-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.4.1 — three tile sizes, one export call
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ascii-diagram-one-source-several-bundled-specializations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ASCII Diagram — one source, several bundled specializations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25-compilation-options-opt_level-supporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Compilation Options: opt_level [SUPPORTING]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 Compilation Options: opt_level [SUPPORTING]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-251-four-optimization-levels-genuinely-compiled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 2.5.1 — four optimization levels, genuinely compiled
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_vector_add_with_constantpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_vector_add_with_constant.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_constant_annotation_missingpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_constant_annotation_missing.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_constant_constraint_missingpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_constant_constraint_missing.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_nonconstant_tile_shapepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_nonconstant_tile_shape.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-05_tuple_constant_2d_tilepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 05_tuple_constant_2d_tile.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-06_multi_signature_specializationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 06_multi_signature_specialization.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-07_opt_level_comparisonpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 07_opt_level_comparison.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="chapter-2-kernel-parameterization">Chapter 2: Kernel Parameterization<a class="headerlink" href="#chapter-2-kernel-parameterization" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>"<code>ct.Constant</code> is not a type hint in the way <code>int</code> or <code>float</code> are in ordinary Python — it doesn't describe what kind of data a parameter holds, it describes when the compiler is allowed to know its value. A <code>Constant[int]</code> parameter is not an integer that happens to be known early; it's a promise, checked by the compiler in both directions, that the value will be baked directly into the generated code before a single instruction exists — which is exactly why a tile's shape has to be one, and a running total from <code>ct.sum</code> never can be."</p>
+</blockquote>
+<p><strong>What you will understand by the end of this chapter:</strong></p>
+<ul>
+<li>That <code>ct.Constant</code> is a compiler-enforced contract, not decoration — annotating a parameter <code>Constant</code> and then supplying a <code>ScalarConstraint</code> for it at compile time is a real, genuinely-triggered <code>TypeError</code>, and so is the reverse: supplying a <code>ConstantConstraint</code> for a parameter that isn't annotated <code>Constant</code> at all</li>
+<li>Why <code>ct.load</code>'s <code>shape</code> argument specifically requires a compile-time constant tuple, genuinely confirmed by the exact <code>TileTypeError</code> the compiler raises when a tile size arrives as an ordinary runtime scalar instead</li>
+<li>How to declare a genuinely multi-dimensional compile-time constant — a <code>(32, 64)</code> tile shape — using <code>TupleConstraint</code>, and why <code>ConstantConstraint</code> alone rejects a Python tuple outright</li>
+<li>That one kernel function can be ahead-of-time compiled for <em>several</em> signatures in a single <code>export_kernel</code> call — real, differently-shaped specializations of the same source, bundled into one genuinely growing output — which is what makes a single cuTile Python kernel portable across tile sizes the same way Chapter 1's multi-architecture export made it portable across GPUs</li>
+<li>That <code>opt_level</code>, a real keyword argument to <code>@ct.kernel</code>, genuinely changes the compiled binary's size in this book's own environment — and that the relationship isn't the simple "higher is always smaller" story you might expect</li>
+</ul>
+<p><strong>What you need to know first:</strong></p>
+<ul>
+<li>Chapter 1's vocabulary: <code>Array</code> vs. <code>Tile</code>, the kernel boundary, and <code>ct.compilation.export_kernel</code> as this book's ahead-of-time, driver-free verification method. This chapter reuses that same <code>ArrayConstraint</code>/<code>KernelSignature</code> scaffolding without re-explaining it from scratch.</li>
+<li>Nothing about compile-time constants in cuTile Python is unique to GPU programming as such — the closest everyday analogy is a C or C++ template parameter, or a Rust const generic: a value the compiler needs settled before it can generate code, as opposed to a value that only exists once the program is actually running.</li>
+</ul>
+<h2 id="21-ctconstant-a-contract-checked-in-both-directions-foundational">2.1 <code>ct.Constant</code>: A Contract, Checked in Both Directions <code>[FOUNDATIONAL]</code><a class="headerlink" href="#21-ctconstant-a-contract-checked-in-both-directions-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition">Intuition<a class="headerlink" href="#intuition" title="Permanent link">&para;</a></h3>
+<p>Think of a kernel parameter's type annotation not as a label but as a promise made to a notary, and the <code>KernelSignature</code> passed to <code>export_kernel</code> as the notarized document that has to match it exactly. If the promise says "this value will be known and fixed before any code is generated" (<code>ct.Constant</code>), the document had better actually supply a fixed value (<code>ConstantConstraint</code>) — a promise to notarize a <em>variable</em> amount instead is refused. And the reverse holds too: notarizing a fixed amount against a promise that never claimed to be about a fixed value at all is refused just as firmly. cuTile Python's compiler is that notary, and it checks the match in both directions, not just one.</p>
+<h3 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h3>
+<p><code>ct.Constant</code> (usable bare, or subscripted as <code>ct.Constant[int]</code>, <code>ct.Constant[tuple[int, int]]</code>, and similar) marks a kernel parameter as <em>constant-embedded</em>: its value is baked directly into the compiled code for one specific signature, the same value every time that compiled specialization runs, rather than read from memory or a register at launch time. Every kernel parameter's <code>KernelSignature</code> entry has to agree with its Python-level annotation about this:</p>
+<table>
+<thead>
+<tr>
+<th>Python annotation</th>
+<th>Compatible <code>KernelSignature</code> constraint</th>
+<th>Incompatible constraint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tile_size: ct.Constant[int]</code></td>
+<td><code>ConstantConstraint(256)</code></td>
+<td><code>ScalarConstraint(ct.int32)</code></td>
+</tr>
+<tr>
+<td><code>n</code> (no <code>Constant</code> annotation)</td>
+<td><code>ScalarConstraint(ct.int32)</code></td>
+<td><code>ConstantConstraint(256)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="worked-example-211-the-baseline-annotation-and-constraint-agree">Worked Example 2.1.1 — the baseline: annotation and constraint agree<a class="headerlink" href="#worked-example-211-the-baseline-annotation-and-constraint-agree" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled with tile_size embedded as 256:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>01_vector_add_with_constant.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python3<span class="w"> </span>01_vector_add_with_constant.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>compiled with tile_size embedded as 256: 716 bytes
+</code></pre></div>
+<p><code>tile_size</code> never appears as a runtime value anywhere in the compiled output — it's <code>ct.Constant[int]</code> in the Python annotation, and <code>ConstantConstraint(256)</code> in the signature, and the two agree, so the compiler bakes the literal <code>256</code> into the specialization it produces for this one signature. (As Chapter 1's <code>[COMMON TRAP]</code> noted, the exact byte count here — 716, not the 712 Chapter 1 got for what reads like the identical kernel — reflects this file's own exact source text, not some difference in what the kernel does.)</p>
+<h3 id="worked-example-212-a-genuinely-rejected-mismatch-constant-claimed-never-supplied">Worked Example 2.1.2 — a genuinely rejected mismatch: <code>Constant</code> claimed, never supplied<a class="headerlink" href="#worked-example-212-a-genuinely-rejected-mismatch-constant-claimed-never-supplied" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add_no_annotation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">):</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="p">)</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="p">)</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add_no_annotation</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file, <code>02_constant_annotation_missing.py</code>, is included in Complete Runnable Code — it runs to completion (the <code>TypeError</code> is caught and printed), it just never produces a compiled kernel.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python3<span class="w"> </span>02_constant_annotation_missing.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>TypeError: Invalid kernel parameter &#39;tile_size&#39;: ConstantConstraint is only valid for parameters annotated as Constant.
+</code></pre></div>
+<p><code>tile_size</code> here carries no annotation at all — an ordinary, un-typed Python parameter, which cuTile Python treats as a ordinary scalar parameter by default. Supplying a <code>ConstantConstraint</code> for it anyway is rejected immediately, before compilation even starts on the kernel's body — this is a signature-level check, not something the compiler discovers partway through translating <code>ct.load</code>.</p>
+<h3 id="worked-example-213-the-mismatch-in-the-other-direction">Worked Example 2.1.3 — the mismatch in the other direction<a class="headerlink" href="#worked-example-213-the-mismatch-in-the-other-direction" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="p">)</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ScalarConstraint</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="p">)</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>03_constant_constraint_missing.py</code>, included in Complete Runnable Code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python3<span class="w"> </span>03_constant_constraint_missing.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>TypeError: Invalid kernel parameter &#39;tile_size&#39;: Expected a scalar/tuple constant, as implied by the Constant annotation.
+</code></pre></div>
+<p>This is the same <code>vector_add</code> from Worked Example 2.1.1, unchanged — only the signature's constraint for <code>tile_size</code> changed, from <code>ConstantConstraint(256)</code> to <code>ScalarConstraint(ct.int32)</code>. The Python-level annotation still says <code>ct.Constant[int]</code>, and the compiler holds the signature to that promise just as strictly as it held Worked Example 2.1.2's signature to its absence.</p>
+<blockquote>
+<p><code>[COMMON TRAP]</code> It's easy to assume a type annotation in Python is advisory — a hint a checker like <code>mypy</code> might use, but that has no effect on what actually runs. <code>ct.Constant</code> is not that kind of annotation. Both directions of mismatch above are rejected before the kernel's body is even translated, which means the annotation is load-bearing: change <code>tile_size: ct.Constant[int]</code> to plain <code>tile_size</code> (or vice versa) and every existing <code>KernelSignature</code> written against the old annotation stops compiling, exactly as Worked Examples 2.1.2 and 2.1.3 demonstrate from either side.</p>
+</blockquote>
+<h2 id="22-why-a-tiles-shape-specifically-has-to-be-constant-foundational">2.2 Why a Tile's Shape Specifically Has to Be Constant <code>[FOUNDATIONAL]</code><a class="headerlink" href="#22-why-a-tiles-shape-specifically-has-to-be-constant-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_1">Intuition<a class="headerlink" href="#intuition_1" title="Permanent link">&para;</a></h3>
+<p>A <code>Tile</code>'s shape isn't stored anywhere at runtime the way an <code>Array</code>'s shape is — there's no hidden <code>shape</code> field the hardware reads before deciding how many registers a tile occupies. The compiler has to know a tile's exact shape while it's still generating code, because that shape determines how many registers get allocated, how a <code>matmul</code> or <code>reduce</code> gets scheduled, and how a tile's memory access pattern gets laid out — all decisions made once, ahead of time, not re-made every time the kernel runs. <code>ct.load</code>'s <code>shape</code> argument is exactly the parameter that fixes a new tile's shape, so it's the one place this requirement is enforced most directly.</p>
+<h3 id="background_1">Background<a class="headerlink" href="#background_1" title="Permanent link">&para;</a></h3>
+<p><code>ct.load</code>'s signature marks <code>shape</code> as <code>Constant[Shape]</code> — the same <code>ct.Constant</code> mechanism Section 2.1 covered, applied to a built-in operation instead of a user-defined kernel parameter. Passing a value the compiler can't resolve at compile time — a plain runtime scalar, unannotated — into that position produces a real compile-time rejection, not a shape determined "as late as possible" the way a NumPy array's shape can be.</p>
+<h3 id="worked-example-221-a-genuinely-rejected-runtime-tile-shape">Worked Example 2.2.1 — a genuinely rejected runtime tile shape<a class="headerlink" href="#worked-example-221-a-genuinely-rejected-runtime-tile-shape" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">bad_shape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">):</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">a_tile</span><span class="p">)</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="p">)</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ScalarConstraint</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="p">)</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">bad_shape</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>04_nonconstant_tile_shape.py</code>, included in Complete Runnable Code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python3<span class="w"> </span>04_nonconstant_tile_shape.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>TileTypeError: Invalid argument &quot;shape&quot; of load(): Expected a constant integer tuple, but given value is not constant
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  &quot;/tmp/ch2/04_nonconstant_tile_shape.py&quot;, line 7, col 14-57, in bad_shape:
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>        a_tile = ct.load(a, index=(pid,), shape=(tile_size,))
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+</code></pre></div>
+<p>Here <code>tile_size</code> is an ordinary parameter — no <code>ct.Constant</code> annotation at all, and its signature entry is a plain <code>ScalarConstraint</code>, so the compiler genuinely doesn't know its value ahead of time. <code>ct.load</code> names exactly which argument it's unhappy with (<code>"shape"</code>) and exactly what it needed (<code>a constant integer tuple</code>) — the same error shape Chapter 1's <code>TileTypeError</code> for a raw-tile <code>if</code> condition used, naming the argument and the expectation precisely rather than failing with a generic type mismatch.</p>
+<h2 id="23-compile-time-tuples-multi-dimensional-constants-foundational">2.3 Compile-Time Tuples: Multi-Dimensional Constants <code>[FOUNDATIONAL]</code><a class="headerlink" href="#23-compile-time-tuples-multi-dimensional-constants-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_2">Intuition<a class="headerlink" href="#intuition_2" title="Permanent link">&para;</a></h3>
+<p>A one-dimensional tile size is a single compile-time integer, but plenty of real kernels — anything working on a 2D array, like an image or a matrix — need a compile-time <em>pair</em> of integers instead, one per axis. <code>ConstantConstraint</code> alone isn't the right tool for that: it's built for a single scalar constant value, not a structured value like a tuple. <code>TupleConstraint</code> is the tool that says "this whole parameter is a fixed-length tuple, and here is a separate compile-time constraint for each of its elements" — genuinely a different constraint type, not just <code>ConstantConstraint</code> handed a tuple.</p>
+<h3 id="background_2">Background<a class="headerlink" href="#background_2" title="Permanent link">&para;</a></h3>
+<p>Passing a Python <code>tuple</code> directly to <code>ConstantConstraint</code> is rejected outright — it's built to hold one scalar constant value (an <code>int</code>, <code>float</code>, or <code>bool</code>), not a structured one. <code>TupleConstraint</code> takes a sequence of per-item constraints instead — in this case, one <code>ConstantConstraint</code> per axis of a 2D tile shape.</p>
+<h3 id="worked-example-231-a-genuine-2d-compile-time-tile-shape">Worked Example 2.3.1 — a genuine 2D compile-time tile shape<a class="headerlink" href="#worked-example-231-a-genuine-2d-compile-time-tile-shape" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_2d_tile</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_shape</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]):</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">pid0</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">pid1</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid0</span><span class="p">,</span> <span class="n">pid1</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="n">tile_shape</span><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid0</span><span class="p">,</span> <span class="n">pid1</span><span class="p">),</span> <span class="n">tile</span><span class="o">=</span><span class="n">a_tile</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">ndim</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="p">)</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="n">tile_shape_constraint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">TupleConstraint</span><span class="p">(</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>    <span class="p">[</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">64</span><span class="p">)]</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="p">)</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">tile_shape_constraint</span><span class="p">],</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="p">)</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">load_2d_tile</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled with tile_shape embedded as (32, 64):&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>05_tuple_constant_2d_tile.py</code>, included in Complete Runnable Code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python3<span class="w"> </span>05_tuple_constant_2d_tile.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>compiled with tile_shape embedded as (32, 64): 730 bytes
+</code></pre></div>
+<p><code>tile_shape</code> is a single Python parameter — one tuple, <code>(32, 64)</code> — but its <code>KernelSignature</code> entry is a <code>TupleConstraint</code> wrapping <em>two</em> separate <code>ConstantConstraint</code>s, one per element. <code>ct.load</code>'s <code>shape=tile_shape</code> then receives a fully compile-time-resolved 2-tuple, satisfying the same <code>Constant[Shape]</code> requirement Section 2.2 covered, just with two axes fixed instead of one.</p>
+<blockquote>
+<p><code>[COMMON TRAP]</code> <code>ct.compilation.ConstantConstraint((32, 64))</code> — reaching straight for <code>ConstantConstraint</code> with a tuple argument, since that's what worked for the scalar <code>256</code> in Worked Example 2.1.1 — is a genuine, immediate <code>TypeError</code> (<code>Unexpected constant value type &lt;class 'tuple'&gt;</code>), raised the moment <code>ConstantConstraint</code> is constructed, before a <code>KernelSignature</code> or <code>export_kernel</code> call is even reachable. <code>ConstantConstraint</code> is specifically for one scalar constant; a structured compile-time value needs <code>TupleConstraint</code> (for tuples) or <code>ListConstraint</code> (for lists of arrays, covered when Part 1 builds on <code>ArrayConstraint</code> directly) instead.</p>
+</blockquote>
+<h2 id="24-one-kernel-many-specializations-foundational">2.4 One Kernel, Many Specializations <code>[FOUNDATIONAL]</code><a class="headerlink" href="#24-one-kernel-many-specializations-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_3">Intuition<a class="headerlink" href="#intuition_3" title="Permanent link">&para;</a></h3>
+<p><code>export_kernel</code> in every example so far has taken a list containing exactly one <code>KernelSignature</code> — but it's a list for a real reason, not a stylistic artifact. A single cuTile Python kernel function is source code, not yet a compiled binary; compiling it against several signatures at once produces several genuinely distinct specializations — one exact fit for <code>tile_size=128</code>, another for <code>tile_size=256</code> — bundled together into a single output, the same way Chapter 1's multi-architecture export bundled <code>sm_80</code>, <code>sm_90</code>, and <code>sm_100</code> code paths from one Python function.</p>
+<h3 id="background_3">Background<a class="headerlink" href="#background_3" title="Permanent link">&para;</a></h3>
+<p>Each additional <code>KernelSignature</code> passed to <code>export_kernel</code> asks the compiler to produce one more real, independently-specialized version of the kernel, embedded into the same output buffer. This is genuinely additive work for the compiler — not a single generic binary that branches on <code>tile_size</code> at runtime, but multiple separately-compiled, constant-folded specializations, one per signature.</p>
+<h3 id="worked-example-241-three-tile-sizes-one-export-call">Worked Example 2.4.1 — three tile sizes, one export call<a class="headerlink" href="#worked-example-241-three-tile-sizes-one-export-call" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="p">)</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">sig_for</span><span class="p">(</span><span class="n">tile_size</span><span class="p">):</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="n">tile_size</span><span class="p">)],</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>    <span class="p">)</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="k">for</span> <span class="n">sizes</span> <span class="ow">in</span> <span class="p">([</span><span class="mi">128</span><span class="p">],</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">]):</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig_for</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span><span class="si">}</span><span class="s2"> signature(s) </span><span class="si">{</span><span class="n">sizes</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>06_multi_signature_specialization.py</code>, included in Complete Runnable Code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>python3<span class="w"> </span>06_multi_signature_specialization.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>1 signature(s) [128]: 728 bytes
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>2 signature(s) [128, 256]: 1165 bytes
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>3 signature(s) [128, 256, 512]: 1602 bytes
+</code></pre></div>
+<p>Every additional signature genuinely grows the output — each of the three runs compiles the exact same <code>vector_add</code> source, so the growth isn't new logic, it's a new, separately-specialized compilation of the same logic for a different constant-embedded <code>tile_size</code>. A host program shipping this kernel could pick whichever specialization matches the array size it actually has at launch time, without recompiling — the same portability story as Chapter 1's multi-architecture cubin, aimed at tile size instead of GPU generation.</p>
+<h3 id="ascii-diagram-one-source-several-bundled-specializations">ASCII Diagram — one source, several bundled specializations<a class="headerlink" href="#ascii-diagram-one-source-several-bundled-specializations" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>   vector_add(a, b, c, tile_size: ct.Constant[int])      &lt;- one Python function
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>                        |
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>                        |  export_kernel(vector_add, [sig(128), sig(256), sig(512)], ...)
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>                        v
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>   +----------------------------------------------------------+
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>   |  compiled output (1602 bytes)                             |
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>   |  +------------------+  +------------------+  +----------+ |
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>   |  | tile_size = 128  |  | tile_size = 256  |  | ts = 512 | |
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>   |  | (separately      |  | (separately      |  | (separa- | |
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>   |  |  specialized)    |  |  specialized)    |  |  tely)   | |
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>   |  +------------------+  +------------------+  +----------+ |
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>   +----------------------------------------------------------+
+</code></pre></div>
+<h2 id="25-compilation-options-opt_level-supporting">2.5 Compilation Options: <code>opt_level</code> <code>[SUPPORTING]</code><a class="headerlink" href="#25-compilation-options-opt_level-supporting" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_4">Intuition<a class="headerlink" href="#intuition_4" title="Permanent link">&para;</a></h3>
+<p><code>@ct.kernel</code> isn't a bare decorator with no dials to turn — it's documented as accepting real compilation options, <code>opt_level</code> among them, the same idea as <code>rustc -O</code> or <code>nvcc -O3</code>: a knob that trades compile effort for the quality of what comes out the other end. What's worth confirming directly, rather than assuming from the name, is whether turning that knob actually changes anything measurable in this book's own environment — and, if it does, whether the relationship is as simple as "higher number, smaller or faster code" or something less tidy.</p>
+<h3 id="background_4">Background<a class="headerlink" href="#background_4" title="Permanent link">&para;</a></h3>
+<p><code>ct.kernel</code>'s documented parameters include <code>opt_level</code>, an integer from 0 to 3 (default 3), alongside <code>num_ctas</code>, <code>occupancy</code>, and <code>num_worker_warps</code> — all real, documented tuning knobs this book does not exhaustively exercise here, since most of them only matter once real launch performance is measurable on real hardware. <code>opt_level</code> is the exception: it affects what <code>export_kernel</code> actually produces, ahead of time, with no GPU required to observe it.</p>
+<h3 id="worked-example-251-four-optimization-levels-genuinely-compiled">Worked Example 2.5.1 — four optimization levels, genuinely compiled<a class="headerlink" href="#worked-example-251-four-optimization-levels-genuinely-compiled" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">opt_level</span><span class="p">):</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="n">opt_level</span><span class="p">)</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>        <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>        <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>    <span class="k">return</span> <span class="n">vector_add</span>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>    <span class="p">)</span>
+<a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a>
+<a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-19-23" name="__codelineno-19-23" href="#__codelineno-19-23"></a><span class="p">)</span>
+<a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a>
+<a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a><span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+<a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+<a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;opt_level=</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>07_opt_level_comparison.py</code>, included in Complete Runnable Code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>python3<span class="w"> </span>07_opt_level_comparison.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>opt_level=0: 29088 cubin bytes
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>opt_level=1: 24608 cubin bytes
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>opt_level=2: 24736 cubin bytes
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>opt_level=3: 24736 cubin bytes
+</code></pre></div>
+<p>Two things are genuinely true here, and only one of them is the "obvious" story. <code>opt_level=0</code> really does produce the largest binary of the four — 29,088 bytes, noticeably more than any optimized level, consistent with an unoptimized compile keeping more redundant instructions around. But the levels above 0 don't shrink monotonically the way "higher number, smaller output" would predict: <code>opt_level=1</code> is genuinely the <em>smallest</em> of the four (24,608 bytes), and <code>opt_level=2</code> and <code>opt_level=3</code> produce identical output for this particular kernel (24,736 bytes each). This book draws only the conclusion its own evidence supports — <code>opt_level</code> genuinely changes the compiled cubin for this kernel, and the difference between "unoptimized" and "optimized at all" is large and real — without extrapolating a general "3 is always best" rule this one kernel's numbers don't actually establish; a kernel with more arithmetic to fuse or more loops to unroll could easily show a different ordering.</p>
+<h2 id="complete-runnable-code">Complete Runnable Code<a class="headerlink" href="#complete-runnable-code" title="Permanent link">&para;</a></h2>
+<h3 id="file-01_vector_add_with_constantpy">File: <code>01_vector_add_with_constant.py</code><a class="headerlink" href="#file-01_vector_add_with_constantpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>    <span class="p">)</span>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a><span class="p">)</span>
+<a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a>
+<a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-25" name="__codelineno-22-25" href="#__codelineno-22-25"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled with tile_size embedded as 256:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>python3<span class="w"> </span>01_vector_add_with_constant.py
+</code></pre></div>
+<h3 id="file-02_constant_annotation_missingpy">File: <code>02_constant_annotation_missing.py</code><a class="headerlink" href="#file-02_constant_annotation_missingpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add_no_annotation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">):</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>    <span class="p">)</span>
+<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>
+<a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a><span class="p">)</span>
+<a id="__codelineno-24-22" name="__codelineno-24-22" href="#__codelineno-24-22"></a>
+<a id="__codelineno-24-23" name="__codelineno-24-23" href="#__codelineno-24-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-24-24" name="__codelineno-24-24" href="#__codelineno-24-24"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-24-25" name="__codelineno-24-25" href="#__codelineno-24-25"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add_no_annotation</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-24-26" name="__codelineno-24-26" href="#__codelineno-24-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-24-27" name="__codelineno-24-27" href="#__codelineno-24-27"></a><span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-24-28" name="__codelineno-24-28" href="#__codelineno-24-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>python3<span class="w"> </span>02_constant_annotation_missing.py
+</code></pre></div>
+<h3 id="file-03_constant_constraint_missingpy">File: <code>03_constant_constraint_missing.py</code><a class="headerlink" href="#file-03_constant_constraint_missingpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>
+<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a>    <span class="p">)</span>
+<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a>
+<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ScalarConstraint</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span>
+<a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a><span class="p">)</span>
+<a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a>
+<a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-26-25" name="__codelineno-26-25" href="#__codelineno-26-25"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a><span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-26-28" name="__codelineno-26-28" href="#__codelineno-26-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>python3<span class="w"> </span>03_constant_constraint_missing.py
+</code></pre></div>
+<h3 id="file-04_nonconstant_tile_shapepy">File: <code>04_nonconstant_tile_shape.py</code><a class="headerlink" href="#file-04_nonconstant_tile_shapepy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">bad_shape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">):</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">a_tile</span><span class="p">)</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>    <span class="p">)</span>
+<a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a>
+<a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ScalarConstraint</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span>
+<a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a><span class="p">)</span>
+<a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a>
+<a id="__codelineno-28-21" name="__codelineno-28-21" href="#__codelineno-28-21"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-28-22" name="__codelineno-28-22" href="#__codelineno-28-22"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-28-23" name="__codelineno-28-23" href="#__codelineno-28-23"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">bad_shape</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-24" name="__codelineno-28-24" href="#__codelineno-28-24"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-25" name="__codelineno-28-25" href="#__codelineno-28-25"></a><span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-28-26" name="__codelineno-28-26" href="#__codelineno-28-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>python3<span class="w"> </span>04_nonconstant_tile_shape.py
+</code></pre></div>
+<h3 id="file-05_tuple_constant_2d_tilepy">File: <code>05_tuple_constant_2d_tile.py</code><a class="headerlink" href="#file-05_tuple_constant_2d_tilepy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_2d_tile</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_shape</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]):</span>
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>    <span class="n">pid0</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>    <span class="n">pid1</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid0</span><span class="p">,</span> <span class="n">pid1</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="n">tile_shape</span><span class="p">)</span>
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid0</span><span class="p">,</span> <span class="n">pid1</span><span class="p">),</span> <span class="n">tile</span><span class="o">=</span><span class="n">a_tile</span><span class="p">)</span>
+<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>
+<a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+<a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">ndim</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a>    <span class="p">)</span>
+<a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a>
+<a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a><span class="n">tile_shape_constraint</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">TupleConstraint</span><span class="p">(</span>
+<a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a>    <span class="p">[</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">64</span><span class="p">)]</span>
+<a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a><span class="p">)</span>
+<a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-30-21" name="__codelineno-30-21" href="#__codelineno-30-21"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">array_param</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">tile_shape_constraint</span><span class="p">],</span>
+<a id="__codelineno-30-22" name="__codelineno-30-22" href="#__codelineno-30-22"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-30-23" name="__codelineno-30-23" href="#__codelineno-30-23"></a><span class="p">)</span>
+<a id="__codelineno-30-24" name="__codelineno-30-24" href="#__codelineno-30-24"></a>
+<a id="__codelineno-30-25" name="__codelineno-30-25" href="#__codelineno-30-25"></a><span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-30-26" name="__codelineno-30-26" href="#__codelineno-30-26"></a><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">load_2d_tile</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-30-27" name="__codelineno-30-27" href="#__codelineno-30-27"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled with tile_shape embedded as (32, 64):&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>python3<span class="w"> </span>05_tuple_constant_2d_tile.py
+</code></pre></div>
+<h3 id="file-06_multi_signature_specializationpy">File: <code>06_multi_signature_specialization.py</code><a class="headerlink" href="#file-06_multi_signature_specializationpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>    <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>    <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>    <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>
+<a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a>    <span class="p">)</span>
+<a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a>
+<a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">sig_for</span><span class="p">(</span><span class="n">tile_size</span><span class="p">):</span>
+<a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a>        <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="n">tile_size</span><span class="p">)],</span>
+<a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a>        <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a>    <span class="p">)</span>
+<a id="__codelineno-32-23" name="__codelineno-32-23" href="#__codelineno-32-23"></a>
+<a id="__codelineno-32-24" name="__codelineno-32-24" href="#__codelineno-32-24"></a><span class="k">for</span> <span class="n">sizes</span> <span class="ow">in</span> <span class="p">([</span><span class="mi">128</span><span class="p">],</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">]):</span>
+<a id="__codelineno-32-25" name="__codelineno-32-25" href="#__codelineno-32-25"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-32-26" name="__codelineno-32-26" href="#__codelineno-32-26"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">vector_add</span><span class="p">,</span> <span class="p">[</span><span class="n">sig_for</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;tileir_bytecode&quot;</span><span class="p">)</span>
+<a id="__codelineno-32-27" name="__codelineno-32-27" href="#__codelineno-32-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span><span class="si">}</span><span class="s2"> signature(s) </span><span class="si">{</span><span class="n">sizes</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>python3<span class="w"> </span>06_multi_signature_specialization.py
+</code></pre></div>
+<h3 id="file-07_opt_level_comparisonpy">File: <code>07_opt_level_comparison.py</code><a class="headerlink" href="#file-07_opt_level_comparisonpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">opt_level</span><span class="p">):</span>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="n">opt_level</span><span class="p">)</span>
+<a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">vector_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a>        <span class="n">a_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a>        <span class="n">b_tile</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,))</span>
+<a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">a_tile</span> <span class="o">+</span> <span class="n">b_tile</span>
+<a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">tile</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a>    <span class="k">return</span> <span class="n">vector_add</span>
+<a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a>
+<a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-34-15" name="__codelineno-34-15" href="#__codelineno-34-15"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-34-16" name="__codelineno-34-16" href="#__codelineno-34-16"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-34-17" name="__codelineno-34-17" href="#__codelineno-34-17"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-34-18" name="__codelineno-34-18" href="#__codelineno-34-18"></a>    <span class="p">)</span>
+<a id="__codelineno-34-19" name="__codelineno-34-19" href="#__codelineno-34-19"></a>
+<a id="__codelineno-34-20" name="__codelineno-34-20" href="#__codelineno-34-20"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-34-21" name="__codelineno-34-21" href="#__codelineno-34-21"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-34-22" name="__codelineno-34-22" href="#__codelineno-34-22"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-34-23" name="__codelineno-34-23" href="#__codelineno-34-23"></a><span class="p">)</span>
+<a id="__codelineno-34-24" name="__codelineno-34-24" href="#__codelineno-34-24"></a>
+<a id="__codelineno-34-25" name="__codelineno-34-25" href="#__codelineno-34-25"></a><span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+<a id="__codelineno-34-26" name="__codelineno-34-26" href="#__codelineno-34-26"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+<a id="__codelineno-34-27" name="__codelineno-34-27" href="#__codelineno-34-27"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-34-28" name="__codelineno-34-28" href="#__codelineno-34-28"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-34-29" name="__codelineno-34-29" href="#__codelineno-34-29"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;opt_level=</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>python3<span class="w"> </span>07_opt_level_comparison.py
+</code></pre></div>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p><code>ct.Constant</code> is a real, bidirectionally-enforced contract between a kernel's Python-level parameter annotation and the <code>KernelSignature</code> used to compile it — genuinely confirmed here from both directions, with a <code>TypeError</code> naming the exact mismatched parameter whether a signature supplies a <code>ConstantConstraint</code> for a parameter that was never annotated <code>Constant</code>, or a <code>ScalarConstraint</code> for one that was. That contract exists because a <code>Tile</code>'s shape has no runtime representation at all — <code>ct.load</code>'s <code>shape</code> argument specifically requires a compile-time constant tuple, and a genuine <code>TileTypeError</code> confirms exactly that when a plain runtime scalar reaches it instead. Structured compile-time values, like a 2D tile shape, need <code>TupleConstraint</code> wrapping one <code>ConstantConstraint</code> per element — <code>ConstantConstraint</code> alone rejects a bare Python tuple immediately, before a signature or an export call is ever reachable. A single kernel function isn't tied to one compiled specialization: <code>export_kernel</code> genuinely compiles several signatures from the same source into one bundled output, each one a real, independently-specialized version of the kernel for a different constant-embedded <code>tile_size</code> — the same kind of portability Chapter 1 demonstrated across GPU architectures, here demonstrated across tile sizes instead. And <code>@ct.kernel</code>'s <code>opt_level</code> argument genuinely changes what gets compiled, confirmed directly with real cubin byte counts across all four levels — with the honest caveat that the relationship isn't simply "higher is smaller": <code>opt_level=0</code> was clearly the largest of the four for this kernel, but <code>1</code> was smaller than both <code>2</code> and <code>3</code>, which compiled identically to each other.</p>
+<h2 id="self-check-questions">Self-Check Questions<a class="headerlink" href="#self-check-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Worked Examples 2.1.2 and 2.1.3 both raise a <code>TypeError</code> about <code>tile_size</code>, but for opposite reasons. What's the direction of the mismatch in each one?</li>
+<li>Why does <code>ct.load</code>'s <code>shape</code> argument specifically require a compile-time constant, when other arguments to <code>ct.load</code> (like <code>index</code>) don't have to be?</li>
+<li><code>ct.compilation.ConstantConstraint((32, 64))</code> fails immediately with a <code>TypeError</code>. What's the actual fix for describing a compile-time 2-tuple, and why doesn't <code>ConstantConstraint</code> just accept a tuple directly?</li>
+<li>When <code>export_kernel</code> is given a list of three <code>KernelSignature</code>s instead of one, what does the compiler actually produce — one generic kernel that branches on <code>tile_size</code> at runtime, or something else? What evidence from this chapter supports your answer?</li>
+<li>Worked Example 2.5.1 found that <code>opt_level=1</code> produced a smaller cubin than both <code>opt_level=2</code> and <code>opt_level=3</code>. Is it safe to conclude "<code>opt_level=1</code> is generally the best choice for cuTile Python kernels" from this one result? Why or why not?</li>
+</ol>
+<h2 id="where-we-go-next">Where We Go Next<a class="headerlink" href="#where-we-go-next" title="Permanent link">&para;</a></h2>
+<p>This chapter treated <code>ArrayConstraint</code> as a fixed, unexamined ingredient in every <code>KernelSignature</code> — always the same four fields (<code>index_dtype</code>, <code>stride_lower_bound_incl</code>, <code>alias_groups</code>, <code>may_alias_internally</code>), repeated without asking what each one actually buys the compiler or costs a real kernel that violates its assumptions. Part 1 opens by taking <code>ArrayConstraint</code> apart field by field — what aliasing groups genuinely permit or forbid, what a wrong stride or shape assumption actually does when it's violated, and how the compile-time-hint fields (<code>stride_divisible_by</code>, <code>base_addr_divisible_by</code>, and others this chapter never touched) trade a stronger promise from the caller for real, measurable freedom in what the compiler is allowed to generate.</p>
+<h2 id="worked-solutions">Worked Solutions<a class="headerlink" href="#worked-solutions" title="Permanent link">&para;</a></h2>
+<p><strong>1.</strong> Worked Example 2.1.2's <code>tile_size</code> carries no <code>ct.Constant</code> annotation in the Python source, but its <code>KernelSignature</code> entry is a <code>ConstantConstraint(256)</code> anyway — a signature claiming a fixed compile-time value for a parameter the kernel itself never promised to treat that way. Worked Example 2.1.3 is the mirror image: <code>tile_size: ct.Constant[int]</code> in the Python source promises a compile-time-fixed value, but its signature supplies a <code>ScalarConstraint(ct.int32)</code> — a genuine runtime value — reneging on that promise from the signature side instead.</p>
+<p><strong>2.</strong> A tile's shape has no runtime representation anywhere — unlike an <code>Array</code>, which genuinely carries runtime shape and stride information the compiler doesn't need in advance, a <code>Tile</code>'s shape has to be fully resolved before the compiler can decide how many registers it occupies, how operations on it get scheduled, and how it gets laid out in memory, all of which happen once, at compile time, not freshly on every kernel launch. <code>index</code>, by contrast, only says <em>which</em> tile to load — a genuinely runtime-varying position that changes on every block, with no effect on the shape or layout decisions the compiler has to make ahead of time.</p>
+<p><strong>3.</strong> The fix is <code>ct.compilation.TupleConstraint([ct.compilation.ConstantConstraint(32), ct.compilation.ConstantConstraint(64)])</code> — a <code>TupleConstraint</code> wrapping one <code>ConstantConstraint</code> per element of the tuple. <code>ConstantConstraint</code> doesn't accept a tuple directly because it's specifically built to describe one scalar constant value (an <code>int</code>, <code>float</code>, or <code>bool</code>); a structured value like a 2-tuple needs its own constraint type that itself holds a list of per-element constraints, which is exactly what <code>TupleConstraint</code> is for.</p>
+<p><strong>4.</strong> It produces several genuinely separate, independently-specialized compilations of the same source — not one generic kernel with a runtime branch. The evidence is the growing byte count in Worked Example 2.4.1: one signature compiled to 728 bytes, two signatures to 1,165 bytes, and three to 1,602 bytes — each additional signature added real, substantial size to the output, consistent with a fully separate specialization being compiled and embedded for each one, not a small runtime dispatch table added to a single shared body.</p>
+<p><strong>5.</strong> No — one kernel's byte counts at four optimization levels is not enough evidence to generalize a rule for "cuTile Python kernels" as a category. What this chapter's result actually supports is narrower and fully warranted by the evidence: for this specific <code>vector_add</code> kernel, in this book's own environment, <code>opt_level=0</code> produced clearly the largest binary, and <code>1</code> happened to produce a smaller one than <code>2</code> or <code>3</code>. A kernel with more to optimize — more arithmetic to fuse, loops to unroll, or redundant loads to eliminate — could easily show optimization levels ordered differently, or show real size reductions at higher levels that this small elementwise kernel simply has no room to benefit from.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../01-arrays-tiles-and-the-kernel-boundary/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 1. Arrays, Tiles, and the Kernel Boundary">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                1. Arrays, Tiles, and the Kernel Boundary
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Oluwaseyi Awoga
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/maximumbeings" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
