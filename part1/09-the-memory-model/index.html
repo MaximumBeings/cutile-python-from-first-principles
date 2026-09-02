@@ -1,0 +1,1955 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Writing Portable, Tile-Based GPU Kernels in NVIDIA cuTile Python, One Layer at a Time">
+      
+      
+        <meta name="author" content="Oluwaseyi Awoga">
+      
+      
+      
+        <link rel="prev" href="../08-masking-padding-and-rounding-modes/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>9. The Memory Model - CuTile Python From First Principles — Under Development</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-9-the-memory-model" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-header__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CuTile Python From First Principles — Under Development
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              9. The Memory Model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CuTile Python From First Principles — Under Development" class="md-nav__button md-logo" aria-label="CuTile Python From First Principles — Under Development" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4v4h4V4zm6 0v4h4V4zm0 6v4h4v-4zm0 6v4h4v-4zm-2 4v-4h-4v4zm-6 0v-4H4v4zm0-6v-4H4v4zm0-6V4H4v4zm2 6h4v-4h-4zM4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4c-1.08 0-2-.9-2-2V4a2 2 0 0 1 2-2"/></svg>
+
+    </a>
+    CuTile Python From First Principles — Under Development
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 0 — cuTile Foundations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 0 — cuTile Foundations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/01-arrays-tiles-and-the-kernel-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Arrays, Tiles, and the Kernel Boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/02-kernel-parameterization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Kernel Parameterization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/03-tiled-views-shape-and-memory-layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Tiled Views, Shape, and Memory Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/04-the-cutile-programming-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. The cuTile Programming Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part0/05-targeting-hardware-and-ahead-of-time-compilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. Targeting Hardware and Ahead-of-Time Compilation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 1 — Kernel-Array Interface
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 1 — Kernel-Array Interface
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-the-array-tile-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6. The Array-Tile Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-divisibility-and-alignment-hints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7. Divisibility and Alignment Hints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-masking-padding-and-rounding-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8. Masking, Padding, and Rounding Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9. The Memory Model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9. The Memory Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#91-ctloads-memory-order-a-genuine-requirement-not-a-suggestion-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 ct.load's Memory Order: A Genuine Requirement, Not a Suggestion [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.1 ct.load&#39;s Memory Order: A Genuine Requirement, Not a Suggestion [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-911-every-memoryorder-value-against-ctload-with-no-scope-supplied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.1.1 — every MemoryOrder value, against ct.load, with no scope supplied
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#92-ctloads-memory-scope-a-boundary-narrower-than-the-enum-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 ct.load's Memory Scope: A Boundary Narrower Than the Enum [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2 ct.load&#39;s Memory Scope: A Boundary Narrower Than the Enum [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-921-five-scope-values-paired-with-a-legal-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.2.1 — five scope values, paired with a legal order
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#93-ctstores-memory-order-the-mirror-image-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 ct.store's Memory Order: The Mirror Image [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.3 ct.store&#39;s Memory Order: The Mirror Image [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-931-ctstore-against-every-memoryorder-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.3.1 — ct.store against every MemoryOrder value
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#94-atomics-stronger-defaults-and-a-real-cost-for-safety-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Atomics: Stronger Defaults, and a Real Cost for Safety [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.4 Atomics: Stronger Defaults, and a Real Cost for Safety [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-941-scope-restrictions-and-the-cost-of-bounds-checking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.4.1 — scope restrictions, and the cost of bounds checking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_load_memory_order_requirementspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_load_memory_order_requirements.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_load_memory_scope_valuespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_load_memory_scope_values.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_store_memory_order_requirementspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_store_memory_order_requirements.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_atomic_add_scope_and_boundspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_atomic_add_scope_and_bounds.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#91-ctloads-memory-order-a-genuine-requirement-not-a-suggestion-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 ct.load's Memory Order: A Genuine Requirement, Not a Suggestion [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.1 ct.load&#39;s Memory Order: A Genuine Requirement, Not a Suggestion [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-911-every-memoryorder-value-against-ctload-with-no-scope-supplied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.1.1 — every MemoryOrder value, against ct.load, with no scope supplied
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#92-ctloads-memory-scope-a-boundary-narrower-than-the-enum-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 ct.load's Memory Scope: A Boundary Narrower Than the Enum [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2 ct.load&#39;s Memory Scope: A Boundary Narrower Than the Enum [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-921-five-scope-values-paired-with-a-legal-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.2.1 — five scope values, paired with a legal order
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#93-ctstores-memory-order-the-mirror-image-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 ct.store's Memory Order: The Mirror Image [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.3 ct.store&#39;s Memory Order: The Mirror Image [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-931-ctstore-against-every-memoryorder-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.3.1 — ct.store against every MemoryOrder value
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#94-atomics-stronger-defaults-and-a-real-cost-for-safety-foundational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Atomics: Stronger Defaults, and a Real Cost for Safety [FOUNDATIONAL]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.4 Atomics: Stronger Defaults, and a Real Cost for Safety [FOUNDATIONAL]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intuition_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intuition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-example-941-scope-restrictions-and-the-cost-of-bounds-checking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Example 9.4.1 — scope restrictions, and the cost of bounds checking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-runnable-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Runnable Code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Runnable Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-01_load_memory_order_requirementspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 01_load_memory_order_requirements.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-02_load_memory_scope_valuespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 02_load_memory_scope_values.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-03_store_memory_order_requirementspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 03_store_memory_order_requirements.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-04_atomic_add_scope_and_boundspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File: 04_atomic_add_scope_and_bounds.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-check-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Check Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-we-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where We Go Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked Solutions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="chapter-9-the-memory-model">Chapter 9: The Memory Model<a class="headerlink" href="#chapter-9-the-memory-model" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>"Every load and store in this book through Chapter 8 happened inside one block's own private computation — nothing it read or wrote was ever visible to, or dependent on, what any other block was doing at the same moment. <code>MemoryOrder</code> and <code>MemoryScope</code> are the vocabulary for the question every prior chapter's kernels never had to ask: when this block's write becomes visible to some other block, and to which other blocks specifically. This book still can't launch two blocks and watch them race — but it can compile every legal pairing of order and scope, and let the compiler's own acceptance and rejection of each one say what's actually enforced, independent of what this book can observe running."</p>
+</blockquote>
+<p><strong>What you will understand by the end of this chapter:</strong></p>
+<ul>
+<li>That <code>ct.load</code> and <code>ct.store</code> accept genuinely complementary, non-overlapping subsets of <code>MemoryOrder</code> — <code>load</code> takes <code>WEAK</code>/<code>RELAXED</code>/<code>ACQUIRE</code> and rejects <code>RELEASE</code>/<code>ACQ_REL</code>, while <code>store</code> takes <code>WEAK</code>/<code>RELAXED</code>/<code>RELEASE</code> and rejects <code>ACQUIRE</code>/<code>ACQ_REL</code> — confirmed directly from both operations' real rejection messages</li>
+<li>That <code>RELAXED</code> and <code>ACQUIRE</code>/<code>RELEASE</code> genuinely require an explicit <code>memory_scope</code> — not merely "meaningless" without one, as the documentation's phrasing might suggest, but a hard compile-time requirement</li>
+<li>That <code>MemoryScope.CLUSTER</code>, a real, listed enum value, is genuinely rejected for both <code>ct.load</code> and <code>ct.atomic_add</code> in this compiler — a restriction narrower than the enum's own membership</li>
+<li>That <code>ct.atomic_add</code>'s documented defaults (<code>ACQ_REL</code>, <code>DEVICE</code>) are genuinely stronger than <code>ct.load</code>/<code>ct.store</code>'s (<code>WEAK</code>, <code>NONE</code>), and that its <code>check_bounds</code> parameter trades real, measured compiled code for the safety it provides</li>
+</ul>
+<p><strong>What you need to know first:</strong></p>
+<ul>
+<li>Chapter 1's <code>ct.load</code>/<code>ct.store</code> signatures and Chapter 6's <code>ArrayConstraint</code> aliasing fields, which this chapter's atomics build directly on top of.</li>
+<li>Chapter 1's <code>TileTypeError</code> as the exception class for a genuine, compiler-caught type or configuration violation.</li>
+</ul>
+<h2 id="91-ctloads-memory-order-a-genuine-requirement-not-a-suggestion-foundational">9.1 <code>ct.load</code>'s Memory Order: A Genuine Requirement, Not a Suggestion <code>[FOUNDATIONAL]</code><a class="headerlink" href="#91-ctloads-memory-order-a-genuine-requirement-not-a-suggestion-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition">Intuition<a class="headerlink" href="#intuition" title="Permanent link">&para;</a></h3>
+<p><code>ct.load</code>'s documentation lists <code>WEAK</code>, <code>RELAXED</code>, and <code>ACQUIRE</code> as valid <code>memory_order</code> values, and states that <code>memory_scope</code> is "only meaningful when <code>memory_order</code> is not <code>WEAK</code>." That phrasing could describe either a soft recommendation or a hard requirement — this section tests which one it actually is.</p>
+<h3 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h3>
+<p><code>MemoryOrder.WEAK</code> is <code>ct.load</code>'s own documented default, needing no scope. Every other memory order genuinely orders memory operations relative to some <em>scope</em> of other threads — the compiler has to know which threads that ordering applies to before it can generate anything for it.</p>
+<h3 id="worked-example-911-every-memoryorder-value-against-ctload-with-no-scope-supplied">Worked Example 9.1.1 — every <code>MemoryOrder</code> value, against <code>ct.load</code>, with no scope supplied<a class="headerlink" href="#worked-example-911-every-memoryorder-value-against-ctload-with-no-scope-supplied" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="n">x</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,),</span> <span class="n">memory_order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">x</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">return</span> <span class="n">load_kernel</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1"># WEAK, ct.load&#39;s own documented default, needs no memory_scope at all.</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="c1"># RELAXED and ACQUIRE are documented as valid for a load, but this file</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="c1"># tests them with memory_scope left at its own default (NONE) --</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># RELEASE and ACQ_REL are tested too, even though the documentation</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="c1"># already restricts load to WEAK/RELAXED/ACQUIRE.</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">order</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;WEAK (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">WEAK</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;RELAXED&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">),</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>                     <span class="p">(</span><span class="s2">&quot;ACQUIRE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;RELEASE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELEASE</span><span class="p">),</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>                     <span class="p">(</span><span class="s2">&quot;ACQ_REL&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQ_REL</span><span class="p">)]:</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load memory_order=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load memory_order=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>01_load_memory_order_requirements.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python3<span class="w"> </span>01_load_memory_order_requirements.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>load memory_order=WEAK (default): 21792 cubin bytes
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>load memory_order=RELAXED: TileTypeError: tile_load with RELAXED memory ordering requires a memory scope
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  &quot;/tmp/ch9/01_load_memory_order_requirements.py&quot;, line 8, col 13-64, in load_kernel:
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>            x = ct.load(a, (pid,), (tile_size,), memory_order=order)
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>load memory_order=ACQUIRE: TileTypeError: tile_load with ACQUIRE memory ordering requires a memory scope
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  &quot;/tmp/ch9/01_load_memory_order_requirements.py&quot;, line 8, col 13-64, in load_kernel:
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>            x = ct.load(a, (pid,), (tile_size,), memory_order=order)
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>load memory_order=RELEASE: TileTypeError: Invalid memory order for tile_load. Got MemoryOrder.RELEASE, expected one of MemoryOrder.RELAXED, MemoryOrder.ACQUIRE, MemoryOrder.WEAK
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>  &quot;/tmp/ch9/01_load_memory_order_requirements.py&quot;, line 8, col 13-64, in load_kernel:
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            x = ct.load(a, (pid,), (tile_size,), memory_order=order)
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>load memory_order=ACQ_REL: TileTypeError: Invalid memory order for tile_load. Got MemoryOrder.ACQ_REL, expected one of MemoryOrder.RELAXED, MemoryOrder.ACQUIRE, MemoryOrder.WEAK
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>  &quot;/tmp/ch9/01_load_memory_order_requirements.py&quot;, line 8, col 13-64, in load_kernel:
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>            x = ct.load(a, (pid,), (tile_size,), memory_order=order)
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+</code></pre></div>
+<p>Two genuinely distinct rejection messages, for two genuinely distinct reasons. <code>RELAXED</code> and <code>ACQUIRE</code> are <em>legal</em> orders for a load — the error names the missing ingredient (<code>requires a memory scope</code>), not the order itself. <code>RELEASE</code> and <code>ACQ_REL</code> are rejected on entirely different grounds: the error states the exact, exhaustive set <code>ct.load</code> actually accepts, and neither of these two is in it, no scope would fix that.</p>
+<h2 id="92-ctloads-memory-scope-a-boundary-narrower-than-the-enum-foundational">9.2 <code>ct.load</code>'s Memory Scope: A Boundary Narrower Than the Enum <code>[FOUNDATIONAL]</code><a class="headerlink" href="#92-ctloads-memory-scope-a-boundary-narrower-than-the-enum-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_1">Intuition<a class="headerlink" href="#intuition_1" title="Permanent link">&para;</a></h3>
+<p>Section 9.1 established that <code>RELAXED</code> and <code>ACQUIRE</code> need <em>some</em> scope. <code>MemoryScope</code> itself lists five real values: <code>NONE</code>, <code>BLOCK</code>, <code>CLUSTER</code>, <code>DEVICE</code>, <code>SYS</code>. Whether <code>ct.load</code> accepts all five once a scope is actually supplied is a separate, genuinely open question.</p>
+<h3 id="background_1">Background<a class="headerlink" href="#background_1" title="Permanent link">&para;</a></h3>
+<p><code>BLOCK</code> scopes an ordering guarantee to threads within the same block; <code>DEVICE</code> to the whole GPU; <code>SYS</code> to the whole system, including the host; <code>CLUSTER</code> to a thread-block cluster, a genuine hardware grouping above a single block. Nothing in the documentation states that <code>ct.load</code> restricts which of these it accepts — this section checks directly.</p>
+<h3 id="worked-example-921-five-scope-values-paired-with-a-legal-order">Worked Example 9.2.1 — five scope values, paired with a legal order<a class="headerlink" href="#worked-example-921-five-scope-values-paired-with-a-legal-order" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">):</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="n">x</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,),</span> <span class="n">memory_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">memory_scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">x</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">return</span> <span class="n">load_kernel</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="p">)</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="p">)</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="c1"># Pairing RELAXED/ACQUIRE with an explicit memory_scope, as Section 9.1</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="c1"># found is required, lets each ordering actually compile.</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">[</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="p">(</span><span class="s2">&quot;WEAK, NONE (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">WEAK</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, BLOCK&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">BLOCK</span><span class="p">),</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, SYS&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">SYS</span><span class="p">),</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, CLUSTER&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">CLUSTER</span><span class="p">),</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="p">]:</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>02_load_memory_scope_values.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python3<span class="w"> </span>02_load_memory_scope_values.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>load (WEAK, NONE (default)): 21792 cubin bytes
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>load (RELAXED, BLOCK): 21792 cubin bytes
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>load (RELAXED, DEVICE): 21792 cubin bytes
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>load (ACQUIRE, DEVICE): 21536 cubin bytes
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>load (ACQUIRE, SYS): 21536 cubin bytes
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>load (ACQUIRE, CLUSTER): TileTypeError: Invalid memory scope for tile_load. Got MemoryScope.CLUSTER, expected one of MemoryScope.NONE, MemoryScope.BLOCK, MemoryScope.DEVICE, MemoryScope.SYS
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  &quot;/tmp/ch9/02_load_memory_scope_values.py&quot;, line 8, col 13-84, in load_kernel:
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>            x = ct.load(a, (pid,), (tile_size,), memory_order=order, memory_scope=scope)
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+</code></pre></div>
+<blockquote>
+<p><code>[COMMON TRAP]</code> <code>CLUSTER</code> is a real, listed <code>MemoryScope</code> value — genuinely usable elsewhere in cuTile Python's memory model — but genuinely rejected here, for <code>ct.load</code> specifically, with the compiler's own error stating the exact four scopes it does accept. A value's membership in an enum is not, on its own, evidence that every function accepting that enum's type will honor every one of its values — the same lesson Chapter 8 already drew from <code>ct.add</code> rejecting <code>RoundingMode.APPROX</code>.</p>
+</blockquote>
+<p>Two further genuine findings sit inside the accepted rows. <code>WEAK</code> and <code>RELAXED</code> (at either scope tested) compile to the identical 21,792 bytes — the weakest ordering and an explicitly-scoped-but-still-relaxed ordering costing the same here. And <code>ACQUIRE</code> compiles to <em>less</em> code than either, at both scopes it was tested against — a stronger ordering guarantee producing smaller output, reported exactly as measured rather than forced into an "stronger ordering costs more" assumption this book's own numbers don't support.</p>
+<h2 id="93-ctstores-memory-order-the-mirror-image-foundational">9.3 <code>ct.store</code>'s Memory Order: The Mirror Image <code>[FOUNDATIONAL]</code><a class="headerlink" href="#93-ctstores-memory-order-the-mirror-image-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_2">Intuition<a class="headerlink" href="#intuition_2" title="Permanent link">&para;</a></h3>
+<p><code>ct.load</code> accepts <code>WEAK</code>, <code>RELAXED</code>, <code>ACQUIRE</code>. A store is the operation making a write visible to other threads, not observing one — if cuTile Python's memory model is internally consistent the way real hardware memory models generally are, <code>ct.store</code> ought to accept the complementary set instead: <code>WEAK</code>, <code>RELAXED</code>, <code>RELEASE</code>.</p>
+<h3 id="background_2">Background<a class="headerlink" href="#background_2" title="Permanent link">&para;</a></h3>
+<p>An "acquire" order on a read establishes that subsequent operations in program order can't be reordered before it — appropriate for a load, which is how a thread learns about another thread's prior writes. A "release" order on a write establishes that prior operations in program order can't be reordered after it — appropriate for a store, which is how a thread publishes its own writes for later visibility.</p>
+<h3 id="worked-example-931-ctstore-against-every-memoryorder-value">Worked Example 9.3.1 — <code>ct.store</code> against every <code>MemoryOrder</code> value<a class="headerlink" href="#worked-example-931-ctstore-against-every-memoryorder-value" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">):</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">store_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="n">x</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">tile_size</span><span class="p">,),</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">x</span><span class="p">,</span> <span class="n">memory_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">memory_scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="k">return</span> <span class="n">store_kernel</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="p">)</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="p">)</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="c1"># ct.store&#39;s own documented valid values are WEAK, RELAXED, and RELEASE --</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="c1"># the mirror image of ct.load&#39;s WEAK/RELAXED/ACQUIRE. RELAXED and RELEASE</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="c1"># are tested both with and without an explicit scope, and ACQUIRE/ACQ_REL</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="c1"># are tested even though load and store give them opposite outcomes.</span>
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">[</span>
+<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>    <span class="p">(</span><span class="s2">&quot;WEAK, no scope (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">WEAK</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, no scope&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>    <span class="p">(</span><span class="s2">&quot;RELEASE, no scope&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELEASE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a>    <span class="p">(</span><span class="s2">&quot;RELEASE, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELEASE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a>    <span class="p">(</span><span class="s2">&quot;ACQ_REL, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQ_REL</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-6-35" name="__codelineno-6-35" href="#__codelineno-6-35"></a><span class="p">]:</span>
+<a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-6-38" name="__codelineno-6-38" href="#__codelineno-6-38"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-6-39" name="__codelineno-6-39" href="#__codelineno-6-39"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-40" name="__codelineno-6-40" href="#__codelineno-6-40"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-41" name="__codelineno-6-41" href="#__codelineno-6-41"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-6-42" name="__codelineno-6-42" href="#__codelineno-6-42"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>03_store_memory_order_requirements.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python3<span class="w"> </span>03_store_memory_order_requirements.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>store (WEAK, no scope (default)): 18976 cubin bytes
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>store (RELAXED, no scope): TileTypeError: tile_store with RELAXED memory ordering requires a memory scope
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  &quot;/tmp/ch9/03_store_memory_order_requirements.py&quot;, line 9, col 9-70, in store_kernel:
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>            ct.store(a, (pid,), x, memory_order=order, memory_scope=scope)
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>store (RELAXED, DEVICE): 19104 cubin bytes
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>store (RELEASE, no scope): TileTypeError: tile_store with RELEASE memory ordering requires a memory scope
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>  &quot;/tmp/ch9/03_store_memory_order_requirements.py&quot;, line 9, col 9-70, in store_kernel:
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            ct.store(a, (pid,), x, memory_order=order, memory_scope=scope)
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>store (RELEASE, DEVICE): 19104 cubin bytes
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>store (ACQUIRE, DEVICE): TileTypeError: Invalid memory order for tile_store. Got MemoryOrder.ACQUIRE, expected one of MemoryOrder.RELAXED, MemoryOrder.RELEASE, MemoryOrder.WEAK
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>  &quot;/tmp/ch9/03_store_memory_order_requirements.py&quot;, line 9, col 9-70, in store_kernel:
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>            ct.store(a, (pid,), x, memory_order=order, memory_scope=scope)
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>store (ACQ_REL, DEVICE): TileTypeError: Invalid memory order for tile_store. Got MemoryOrder.ACQ_REL, expected one of MemoryOrder.RELAXED, MemoryOrder.RELEASE, MemoryOrder.WEAK
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>  &quot;/tmp/ch9/03_store_memory_order_requirements.py&quot;, line 9, col 9-70, in store_kernel:
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>            ct.store(a, (pid,), x, memory_order=order, memory_scope=scope)
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+</code></pre></div>
+<p>The mirror image is genuinely confirmed, exactly as the conceptual argument predicted: <code>ct.store</code> accepts <code>WEAK</code>, <code>RELAXED</code>, and <code>RELEASE</code>, and its own error message states that exact set when <code>ACQUIRE</code> or <code>ACQ_REL</code> is rejected — the complement of <code>ct.load</code>'s accepted set, confirmed from both operations' real, independently-raised error text rather than assumed from the acquire/release naming alone. <code>RELAXED</code> and <code>RELEASE</code> both genuinely require a scope too, the identical requirement Section 9.1 found for <code>ct.load</code>.</p>
+<h2 id="94-atomics-stronger-defaults-and-a-real-cost-for-safety-foundational">9.4 Atomics: Stronger Defaults, and a Real Cost for Safety <code>[FOUNDATIONAL]</code><a class="headerlink" href="#94-atomics-stronger-defaults-and-a-real-cost-for-safety-foundational" title="Permanent link">&para;</a></h2>
+<h3 id="intuition_3">Intuition<a class="headerlink" href="#intuition_3" title="Permanent link">&para;</a></h3>
+<p><code>ct.atomic_add</code>'s documented defaults are <code>memory_order=ACQ_REL</code> and <code>memory_scope=DEVICE</code> — both meaningfully stronger than <code>ct.load</code>/<code>ct.store</code>'s <code>WEAK</code>/<code>NONE</code> defaults. That's a real design choice worth confirming directly: an atomic read-modify-write inherently coordinates across blocks, so a weak, unscoped default would defeat its purpose the way it never would for an ordinary load.</p>
+<h3 id="background_3">Background<a class="headerlink" href="#background_3" title="Permanent link">&para;</a></h3>
+<p><code>ct.atomic_add(array, indices, update, *, check_bounds=True, memory_order=ACQ_REL, memory_scope=DEVICE)</code> reads an array element, adds <code>update</code>, and writes the result back — each individual element update is atomic, though the bulk operation as a whole is not. <code>check_bounds</code>, on by default, causes out-of-bounds indices to be silently skipped rather than corrupting memory; disabling it hands that responsibility entirely to the caller.</p>
+<h3 id="worked-example-941-scope-restrictions-and-the-cost-of-bounds-checking">Worked Example 9.4.1 — scope restrictions, and the cost of bounds checking<a class="headerlink" href="#worked-example-941-scope-restrictions-and-the-cost-of-bounds-checking" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">check_bounds</span><span class="p">):</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">atomic_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>        <span class="n">indices</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">tile_size</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="n">update</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">tile_size</span><span class="p">,),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>        <span class="n">old</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">atomic_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">memory_scope</span><span class="o">=</span><span class="n">scope</span><span class="p">,</span> <span class="n">check_bounds</span><span class="o">=</span><span class="n">check_bounds</span><span class="p">)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">return</span> <span class="n">atomic_kernel</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="p">)</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="p">)</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="c1"># ct.atomic_add defaults to memory_order=ACQ_REL, memory_scope=DEVICE --</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span class="c1"># a stronger default than ct.load/ct.store&#39;s WEAK/NONE, consistent with</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="c1"># an atomic read-modify-write needing real cross-block visibility.</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;DEVICE (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;BLOCK&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">BLOCK</span><span class="p">),</span>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>                     <span class="p">(</span><span class="s2">&quot;CLUSTER&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">CLUSTER</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;SYS&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">SYS</span><span class="p">)]:</span>
+<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;atomic_add memory_scope=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;atomic_add memory_scope=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>
+<a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a><span class="c1"># check_bounds is documented to guard every index against the array&#39;s</span>
+<a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a><span class="c1"># real bounds by default -- disabling it removes real, generated code.</span>
+<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">check</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;True (default)&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]:</span>
+<a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">,</span> <span class="n">check</span><span class="p">)</span>
+<a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;atomic_add check_bounds=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The complete file is <code>04_atomic_add_scope_and_bounds.py</code>, included in this chapter's Complete Runnable Code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python3<span class="w"> </span>04_atomic_add_scope_and_bounds.py
+</code></pre></div>
+<p>Genuinely run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>atomic_add memory_scope=DEVICE (default): 18992 cubin bytes
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>atomic_add memory_scope=BLOCK: 18864 cubin bytes
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>atomic_add memory_scope=CLUSTER: TileTypeError: Invalid memory scope for tile_atomic_rmw. Got MemoryScope.CLUSTER, expected one of MemoryScope.NONE, MemoryScope.BLOCK, MemoryScope.DEVICE, MemoryScope.SYS
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  &quot;/tmp/ch9/04_atomic_add_scope_and_bounds.py&quot;, line 10, col 15-94, in atomic_kernel:
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>            old = ct.atomic_add(a, indices, update, memory_scope=scope, check_bounds=check_bounds)
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>atomic_add memory_scope=SYS: 18992 cubin bytes
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>atomic_add check_bounds=True (default): 18992 cubin bytes
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>atomic_add check_bounds=False: 18480 cubin bytes
+</code></pre></div>
+<p><code>CLUSTER</code> is rejected for <code>ct.atomic_add</code> too, with the identical accepted-set message Section 9.2 found for <code>ct.load</code> — the same real restriction, confirmed a second time on a genuinely different operation, not a one-off quirk specific to loads. <code>BLOCK</code>'s scope compiles to less code than <code>DEVICE</code>'s or <code>SYS</code>'s (which match each other exactly) — a narrower, block-local ordering guarantee costing less than a device- or system-wide one, the direction "stronger scope, more code" would actually predict, in contrast to Section 9.2's <code>ACQUIRE</code> result. And <code>check_bounds=False</code> genuinely removes 512 bytes of real, generated bounds-checking logic — the clearest, most intuitive result in this chapter: disabling a safety check that the documentation explicitly says shifts responsibility onto the caller measurably shrinks what the compiler has to generate.</p>
+<h2 id="complete-runnable-code">Complete Runnable Code<a class="headerlink" href="#complete-runnable-code" title="Permanent link">&para;</a></h2>
+<h3 id="file-01_load_memory_order_requirementspy">File: <code>01_load_memory_order_requirements.py</code><a class="headerlink" href="#file-01_load_memory_order_requirementspy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        <span class="n">x</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,),</span> <span class="n">memory_order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">x</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="k">return</span> <span class="n">load_kernel</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="p">)</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="p">)</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="c1"># WEAK, ct.load&#39;s own documented default, needs no memory_scope at all.</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="c1"># RELAXED and ACQUIRE are documented as valid for a load, but this file</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="c1"># tests them with memory_scope left at its own default (NONE) --</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="c1"># RELEASE and ACQ_REL are tested too, even though the documentation</span>
+<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a><span class="c1"># already restricts load to WEAK/RELAXED/ACQUIRE.</span>
+<a id="__codelineno-12-28" name="__codelineno-12-28" href="#__codelineno-12-28"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">order</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;WEAK (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">WEAK</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;RELAXED&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">),</span>
+<a id="__codelineno-12-29" name="__codelineno-12-29" href="#__codelineno-12-29"></a>                     <span class="p">(</span><span class="s2">&quot;ACQUIRE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;RELEASE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELEASE</span><span class="p">),</span>
+<a id="__codelineno-12-30" name="__codelineno-12-30" href="#__codelineno-12-30"></a>                     <span class="p">(</span><span class="s2">&quot;ACQ_REL&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQ_REL</span><span class="p">)]:</span>
+<a id="__codelineno-12-31" name="__codelineno-12-31" href="#__codelineno-12-31"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+<a id="__codelineno-12-32" name="__codelineno-12-32" href="#__codelineno-12-32"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-12-33" name="__codelineno-12-33" href="#__codelineno-12-33"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-12-34" name="__codelineno-12-34" href="#__codelineno-12-34"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-35" name="__codelineno-12-35" href="#__codelineno-12-35"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load memory_order=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-36" name="__codelineno-12-36" href="#__codelineno-12-36"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-12-37" name="__codelineno-12-37" href="#__codelineno-12-37"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load memory_order=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python3<span class="w"> </span>01_load_memory_order_requirements.py
+</code></pre></div>
+<h3 id="file-02_load_memory_scope_valuespy">File: <code>02_load_memory_scope_values.py</code><a class="headerlink" href="#file-02_load_memory_scope_valuespy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">):</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>        <span class="n">x</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="p">(</span><span class="n">tile_size</span><span class="p">,),</span> <span class="n">memory_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">memory_scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">x</span><span class="p">)</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="k">return</span> <span class="n">load_kernel</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>    <span class="p">)</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="p">)</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="c1"># Pairing RELAXED/ACQUIRE with an explicit memory_scope, as Section 9.1</span>
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="c1"># found is required, lets each ordering actually compile.</span>
+<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">[</span>
+<a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>    <span class="p">(</span><span class="s2">&quot;WEAK, NONE (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">WEAK</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, BLOCK&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">BLOCK</span><span class="p">),</span>
+<a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, SYS&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">SYS</span><span class="p">),</span>
+<a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, CLUSTER&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">CLUSTER</span><span class="p">),</span>
+<a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a><span class="p">]:</span>
+<a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-14-35" name="__codelineno-14-35" href="#__codelineno-14-35"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-14-36" name="__codelineno-14-36" href="#__codelineno-14-36"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-37" name="__codelineno-14-37" href="#__codelineno-14-37"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-38" name="__codelineno-14-38" href="#__codelineno-14-38"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-14-39" name="__codelineno-14-39" href="#__codelineno-14-39"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>python3<span class="w"> </span>02_load_memory_scope_values.py
+</code></pre></div>
+<h3 id="file-03_store_memory_order_requirementspy">File: <code>03_store_memory_order_requirements.py</code><a class="headerlink" href="#file-03_store_memory_order_requirementspy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">):</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">store_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>        <span class="n">x</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">tile_size</span><span class="p">,),</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">x</span><span class="p">,</span> <span class="n">memory_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">memory_scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="k">return</span> <span class="n">store_kernel</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="p">)</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="p">)</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="c1"># ct.store&#39;s own documented valid values are WEAK, RELAXED, and RELEASE --</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="c1"># the mirror image of ct.load&#39;s WEAK/RELAXED/ACQUIRE. RELAXED and RELEASE</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="c1"># are tested both with and without an explicit scope, and ACQUIRE/ACQ_REL</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="c1"># are tested even though load and store give them opposite outcomes.</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">[</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>    <span class="p">(</span><span class="s2">&quot;WEAK, no scope (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">WEAK</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, no scope&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a>    <span class="p">(</span><span class="s2">&quot;RELAXED, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELAXED</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a>    <span class="p">(</span><span class="s2">&quot;RELEASE, no scope&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELEASE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">NONE</span><span class="p">),</span>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a>    <span class="p">(</span><span class="s2">&quot;RELEASE, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">RELEASE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a>    <span class="p">(</span><span class="s2">&quot;ACQUIRE, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQUIRE</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a>    <span class="p">(</span><span class="s2">&quot;ACQ_REL, DEVICE&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryOrder</span><span class="o">.</span><span class="n">ACQ_REL</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span>
+<a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a><span class="p">]:</span>
+<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">scope</span><span class="p">)</span>
+<a id="__codelineno-16-37" name="__codelineno-16-37" href="#__codelineno-16-37"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-16-38" name="__codelineno-16-38" href="#__codelineno-16-38"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-16-39" name="__codelineno-16-39" href="#__codelineno-16-39"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-40" name="__codelineno-16-40" href="#__codelineno-16-40"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-41" name="__codelineno-16-41" href="#__codelineno-16-41"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-16-42" name="__codelineno-16-42" href="#__codelineno-16-42"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>python3<span class="w"> </span>03_store_memory_order_requirements.py
+</code></pre></div>
+<h3 id="file-04_atomic_add_scope_and_boundspy">File: <code>04_atomic_add_scope_and_bounds.py</code><a class="headerlink" href="#file-04_atomic_add_scope_and_boundspy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cuda.tile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_kernel</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">check_bounds</span><span class="p">):</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="nd">@ct</span><span class="o">.</span><span class="n">kernel</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">atomic_kernel</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">:</span> <span class="n">ct</span><span class="o">.</span><span class="n">Constant</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>        <span class="n">pid</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">bid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>        <span class="n">indices</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">tile_size</span> <span class="o">+</span> <span class="n">ct</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>        <span class="n">update</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">tile_size</span><span class="p">,),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>        <span class="n">old</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">atomic_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">memory_scope</span><span class="o">=</span><span class="n">scope</span><span class="p">,</span> <span class="n">check_bounds</span><span class="o">=</span><span class="n">check_bounds</span><span class="p">)</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="k">return</span> <span class="n">atomic_kernel</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">array_param</span><span class="p">():</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>    <span class="k">return</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ArrayConstraint</span><span class="p">(</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>        <span class="n">stride_lower_bound_incl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alias_groups</span><span class="o">=</span><span class="p">[],</span> <span class="n">may_alias_internally</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>    <span class="p">)</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a><span class="n">sig</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">KernelSignature</span><span class="p">(</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>    <span class="p">[</span><span class="n">array_param</span><span class="p">(),</span> <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">ConstantConstraint</span><span class="p">(</span><span class="mi">256</span><span class="p">)],</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>    <span class="n">calling_convention</span><span class="o">=</span><span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">CallingConvention</span><span class="o">.</span><span class="n">cutile_python_v2</span><span class="p">(),</span>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="p">)</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a><span class="c1"># ct.atomic_add defaults to memory_order=ACQ_REL, memory_scope=DEVICE --</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a><span class="c1"># a stronger default than ct.load/ct.store&#39;s WEAK/NONE, consistent with</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a><span class="c1"># an atomic read-modify-write needing real cross-block visibility.</span>
+<a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;DEVICE (default)&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;BLOCK&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">BLOCK</span><span class="p">),</span>
+<a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a>                     <span class="p">(</span><span class="s2">&quot;CLUSTER&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">CLUSTER</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;SYS&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">SYS</span><span class="p">)]:</span>
+<a id="__codelineno-18-29" name="__codelineno-18-29" href="#__codelineno-18-29"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-18-30" name="__codelineno-18-30" href="#__codelineno-18-30"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-18-31" name="__codelineno-18-31" href="#__codelineno-18-31"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-18-32" name="__codelineno-18-32" href="#__codelineno-18-32"></a>        <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-33" name="__codelineno-18-33" href="#__codelineno-18-33"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;atomic_add memory_scope=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-34" name="__codelineno-18-34" href="#__codelineno-18-34"></a>    <span class="k">except</span> <span class="n">ct</span><span class="o">.</span><span class="n">TileError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-18-35" name="__codelineno-18-35" href="#__codelineno-18-35"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;atomic_add memory_scope=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-36" name="__codelineno-18-36" href="#__codelineno-18-36"></a>
+<a id="__codelineno-18-37" name="__codelineno-18-37" href="#__codelineno-18-37"></a><span class="c1"># check_bounds is documented to guard every index against the array&#39;s</span>
+<a id="__codelineno-18-38" name="__codelineno-18-38" href="#__codelineno-18-38"></a><span class="c1"># real bounds by default -- disabling it removes real, generated code.</span>
+<a id="__codelineno-18-39" name="__codelineno-18-39" href="#__codelineno-18-39"></a><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">check</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;True (default)&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]:</span>
+<a id="__codelineno-18-40" name="__codelineno-18-40" href="#__codelineno-18-40"></a>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">build_kernel</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">MemoryScope</span><span class="o">.</span><span class="n">DEVICE</span><span class="p">,</span> <span class="n">check</span><span class="p">)</span>
+<a id="__codelineno-18-41" name="__codelineno-18-41" href="#__codelineno-18-41"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+<a id="__codelineno-18-42" name="__codelineno-18-42" href="#__codelineno-18-42"></a>    <span class="n">ct</span><span class="o">.</span><span class="n">compilation</span><span class="o">.</span><span class="n">export_kernel</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">[</span><span class="n">sig</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="n">gpu_code</span><span class="o">=</span><span class="s2">&quot;sm_90&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;cubin&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-43" name="__codelineno-18-43" href="#__codelineno-18-43"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;atomic_add check_bounds=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="si">}</span><span class="s2"> cubin bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python3<span class="w"> </span>04_atomic_add_scope_and_bounds.py
+</code></pre></div>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p><code>ct.load</code> and <code>ct.store</code> accept genuinely complementary, non-overlapping subsets of <code>MemoryOrder</code> — <code>WEAK</code>/<code>RELAXED</code>/<code>ACQUIRE</code> for a load, <code>WEAK</code>/<code>RELAXED</code>/<code>RELEASE</code> for a store — confirmed from each operation's own real rejection message, not merely inferred from the acquire/release naming convention. <code>RELAXED</code>, <code>ACQUIRE</code>, and <code>RELEASE</code> all genuinely require an explicit <code>memory_scope</code>, a hard compile-time requirement rather than a soft recommendation, with a <code>TileTypeError</code> naming exactly what's missing. <code>MemoryScope.CLUSTER</code>, a real, listed enum value, is genuinely rejected by both <code>ct.load</code> and <code>ct.atomic_add</code> in this compiler, each with an error stating the same narrower, four-value accepted set — evidence that enum membership alone never guarantees a specific operation accepts a specific value, an instance of the same lesson Chapter 8 drew from <code>RoundingMode</code>. <code>ct.atomic_add</code>'s defaults (<code>ACQ_REL</code>, <code>DEVICE</code>) are genuinely stronger than <code>ct.load</code>/<code>ct.store</code>'s (<code>WEAK</code>, <code>NONE</code>), consistent with an atomic read-modify-write needing real cross-block coordination by design. And <code>check_bounds=False</code> measurably shrinks compiled output by removing real, generated bounds-checking logic — the most straightforwardly intuitive result this chapter measured.</p>
+<h2 id="self-check-questions">Self-Check Questions<a class="headerlink" href="#self-check-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>ct.load</code> rejects <code>RELEASE</code> and <code>ACQ_REL</code> outright, with a different error message than the one it gives for <code>RELAXED</code>/<code>ACQUIRE</code> without a scope. What is the substantive difference between "this order is illegal for this operation" and "this order is legal but incomplete without more information"?</li>
+<li>Both <code>ct.load</code> and <code>ct.atomic_add</code> reject <code>MemoryScope.CLUSTER</code> with the identical style of error, naming the same four accepted scopes. Does testing this on two different operations make it safe to conclude <code>CLUSTER</code> is rejected everywhere in cuTile Python that accepts a <code>MemoryScope</code>? Why or why not?</li>
+<li><code>ct.atomic_add</code>'s default <code>memory_order</code> is <code>ACQ_REL</code>, meaningfully stronger than <code>ct.load</code>/<code>ct.store</code>'s <code>WEAK</code> default. Why does an atomic read-modify-write need a stronger default ordering than an ordinary load or store?</li>
+<li>Section 9.2 found <code>ACQUIRE</code> compiling to less code than <code>WEAK</code>/<code>RELAXED</code> for <code>ct.load</code>, while Section 9.4 found <code>BLOCK</code>'s scope compiling to less code than <code>DEVICE</code>'s/<code>SYS</code>'s for <code>ct.atomic_add</code> — the second result matching "narrower guarantee, less code" far more directly than the first. What should you conclude about assuming a single, universal relationship between ordering/scope strength and compiled size across different operations?</li>
+<li><code>check_bounds=False</code> on <code>ct.atomic_add</code> measurably shrinks compiled output, and the documentation states it shifts responsibility for valid indices entirely onto the caller. What genuine risk does that trade-off carry that this book's own environment cannot demonstrate directly?</li>
+</ol>
+<h2 id="where-we-go-next">Where We Go Next<a class="headerlink" href="#where-we-go-next" title="Permanent link">&para;</a></h2>
+<p>This chapter measured every memory-ordering and atomic choice purely by what it compiles to — real, confirmable evidence about which combinations the compiler accepts and how large the result is, and nothing at all about whether a given ordering actually prevents a real race between two real blocks, which needs <code>ct.launch</code> against real hardware this book still cannot reach. Chapter 10 turns to <code>ct.tune</code> and autotuning: letting the compiler explore several genuinely different compiled specializations of the same kernel — the same multi-signature portability Chapter 2 and Chapter 5 already established as real and driver-free — and picking among them by a criterion this book can also state honestly: which one is smallest, not which one would actually run fastest on hardware this book has never had.</p>
+<h2 id="worked-solutions">Worked Solutions<a class="headerlink" href="#worked-solutions" title="Permanent link">&para;</a></h2>
+<p><strong>1.</strong> "This order is illegal for this operation" — <code>ct.load</code> rejecting <code>RELEASE</code>/<code>ACQ_REL</code> — means no amount of additional configuration, including a scope, would ever make that combination compile; the order itself doesn't belong to that operation's vocabulary at all. "This order is legal but incomplete" — <code>RELAXED</code>/<code>ACQUIRE</code> without a scope — means the order is a genuine, accepted choice for that operation, but the compiler needs one more piece of information (which threads the ordering applies to) before it can generate anything for it; supplying that missing scope, as Section 9.2 did, is enough to make it compile.</p>
+<p><strong>2.</strong> No — two confirmed rejections, even on two different operations, are still only two data points. Every other function in cuTile Python that accepts a <code>memory_scope</code> parameter (<code>ct.store</code>, and any of the other atomic operations this chapter didn't test, such as <code>ct.atomic_max</code> or <code>ct.atomic_cas</code>) would need to be tested directly before extending "load and atomic_add reject CLUSTER" into "everything rejects CLUSTER" — the same caution this book applied to <code>ct.add</code>/<code>ct.sqrt</code>'s <code>RoundingMode.FULL</code> rejection in Chapter 8.</p>
+<p><strong>3.</strong> An atomic read-modify-write is inherently about coordinating a shared value across multiple blocks — reading it, modifying it, and writing it back in a way other blocks' concurrent atomics must observe correctly. A <code>WEAK</code> default, appropriate for an ordinary load or store that's frequently just reading or writing a block's own private data, would defeat the entire purpose of an operation whose only reason to exist is safe, ordered coordination between otherwise-independent blocks.</p>
+<p><strong>4.</strong> That there's no single, universal rule connecting "stronger ordering or scope" to "more compiled code" across every function this book has tested — each operation has to be measured on its own terms. Chapter 2's <code>opt_level</code>, Chapter 6's <code>alias_groups</code>, and Chapter 7's <code>stride_constant</code>/<code>shape_constant</code> pair already established the same caution for other fields; this chapter's <code>ACQUIRE</code>-versus-<code>BLOCK</code> contrast is the identical lesson applied to memory ordering and scope specifically.</p>
+<p><strong>5.</strong> With <code>check_bounds=False</code>, an index that is genuinely out of the array's bounds produces undefined behavior instead of being safely skipped — a real correctness and memory-safety risk on actual hardware. This book's <code>export_kernel</code>-only environment can confirm that disabling the check compiles successfully and produces smaller code, but it cannot demonstrate what "undefined behavior" from a real out-of-bounds atomic access on real device memory actually looks like, because observing that requires a genuine <code>ct.launch</code> against a real GPU — precisely the boundary this book has been explicit about not being able to cross since Chapter 1.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../08-masking-padding-and-rounding-modes/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 8. Masking, Padding, and Rounding Modes">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                8. Masking, Padding, and Rounding Modes
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Oluwaseyi Awoga
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/maximumbeings" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
