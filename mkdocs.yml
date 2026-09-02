@@ -67,6 +67,7 @@ nav:
   - "Part 1 — Kernel-Array Interface":
       - "6. The Array-Tile Contract": part1/06-the-array-tile-contract.md
       - "7. Divisibility and Alignment Hints": part1/07-divisibility-and-alignment-hints.md
+      - "8. Masking, Padding, and Rounding Modes": part1/08-masking-padding-and-rounding-modes.md
 
 extra:
   social:
