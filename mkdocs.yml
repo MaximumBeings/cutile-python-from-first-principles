@@ -73,6 +73,7 @@ nav:
   - "Part 2 — Composing Kernels":
       - "11. Composing Kernels: Tile Functions and Inlining": part2/11-composing-kernels-tile-functions-and-inlining.md
       - "12. Symbol Names and Multi-Kernel Artifacts": part2/12-symbol-names-and-multi-kernel-artifacts.md
+      - "13. Multi-Pass Kernels: Loops and Traversal": part2/13-multi-pass-kernels-loops-and-traversal.md
 
 extra:
   social:
