@@ -58,6 +58,8 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - "Part 0 — cuTile Foundations":
+      - "1. Arrays, Tiles, and the Kernel Boundary": part0/01-arrays-tiles-and-the-kernel-boundary.md
 
 extra:
   social:
