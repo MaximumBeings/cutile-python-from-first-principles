@@ -66,6 +66,7 @@ nav:
       - "5. Targeting Hardware and Ahead-of-Time Compilation": part0/05-targeting-hardware-and-ahead-of-time-compilation.md
   - "Part 1 — Kernel-Array Interface":
       - "6. The Array-Tile Contract": part1/06-the-array-tile-contract.md
+      - "7. Divisibility and Alignment Hints": part1/07-divisibility-and-alignment-hints.md
 
 extra:
   social:
