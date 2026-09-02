@@ -70,6 +70,8 @@ nav:
       - "8. Masking, Padding, and Rounding Modes": part1/08-masking-padding-and-rounding-modes.md
       - "9. The Memory Model": part1/09-the-memory-model.md
       - "10. Compiler Hints and Autotuning": part1/10-compiler-hints-and-autotuning.md
+  - "Part 2 — Composing Kernels":
+      - "11. Composing Kernels: Tile Functions and Inlining": part2/11-composing-kernels-tile-functions-and-inlining.md
 
 extra:
   social:
