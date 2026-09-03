@@ -19,9 +19,9 @@ The design principles carried through the whole book:
 
 <div class="grid cards" markdown>
 
-- :material-view-grid:{ .lg .middle } **27 chapters and counting**
+- :material-view-grid:{ .lg .middle } **28 chapters and counting**
 
-    Part 0 through Part 7, from the tile/array distinction to a Monte Carlo option pricer. This book's original outline estimated 21 chapters in total; Parts 0-2 alone have already reached 27, because real testing against the installed package kept surfacing more genuinely verifiable ground than the outline anticipated. The final count isn't fixed in advance — it's set chapter by chapter, the same way it has been since Part 0.
+    Part 0 through Part 7, from the tile/array distinction to a Monte Carlo option pricer. This book's original outline estimated 21 chapters in total; Parts 0-2 alone reached 28 before Part 2 closed, because real testing against the installed package kept surfacing more genuinely verifiable ground than the outline anticipated. The final count isn't fixed in advance — it's set chapter by chapter, the same way it has been since Part 0.
 
 - :material-cube-scan:{ .lg .middle } **Tiles vs. arrays**
 
@@ -43,7 +43,7 @@ The design principles carried through the whole book:
 |---|---|
 | **Part 0 — cuTile Foundations** | Arrays, tiles, and the kernel boundary; kernel parameterization with `ct.Constant`; tiled views and memory layout; the cuTile programming model (grids, `ct.bid`); targeting hardware and ahead-of-time compilation |
 | **Part 1 — Kernel–Array Interface** | The array–tile contract (`ArrayConstraint`, aliasing); divisibility and alignment hints; masking, padding, and rounding modes; the memory model (order, scope, atomics); autotuning with `ct.tune` |
-| **Part 2 — Composing Kernels** | Originally scoped as a handful of chapters on elementwise kernels, the tiled matmul kernel (`ct.matmul`, tensor cores), and reduction/scan kernels; grew, chapter by chapter, into seventeen (11-27) as real testing kept surfacing more ground worth covering honestly — tile-function composition and inlining, the full runtime parameter surface, reshaping, elementwise math and comparisons, bitwise operations and atomics, matmul, permute/transpose/advanced indexing, custom reductions, compile-time metaprogramming, general index-tile memory access (`ct.gather`/`ct.scatter`), and the host/device boundary with `ct.tune`'s own pre-launch validation |
+| **Part 2 — Composing Kernels** (complete) | Originally scoped as a handful of chapters on elementwise kernels, the tiled matmul kernel (`ct.matmul`, tensor cores), and reduction/scan kernels; grew, chapter by chapter, into eighteen (11-28) as real testing kept surfacing more ground worth covering honestly — tile-function composition and inlining, the full runtime parameter surface, reshaping, elementwise math and comparisons, bitwise operations and atomics, matmul, permute/transpose/advanced indexing, custom reductions, compile-time metaprogramming, general index-tile memory access (`ct.gather`/`ct.scatter`), the host/device boundary with `ct.tune`'s own pre-launch validation, and closing out with runtime assertions, debug output, and per-architecture compiler hints |
 | **Part 3 — Wiring Into PyTorch's Autograd** | `torch.autograd.Function` as the graph node |
 | **Part 4 — The Backward Kernel** | Writing the backward kernel, chaining custom cuTile ops through autograd |
 | **Part 5 — GPU Acceleration and Performance** | Compilation and export revisited (cubin vs. Tile IR bytecode, calling conventions), benchmarking honestly with no GPU present |
