@@ -98,6 +98,7 @@ nav:
       - "33. Ragged Tails, padding_mode, and a Blind Spot in This Book's Own Method": part4/33-ragged-tails-padding-mode-and-a-blind-spot-in-this-books-own-method.md
       - "34. MatMulOp — A Backward Pass Built From Two More Matmuls": part4/34-matmulop-a-backward-built-from-two-more-matmuls.md
       - "35. A Two-Layer Network — Four Custom Functions, One Backward Pass": part4/35-a-two-layer-network-four-custom-functions-one-backward-pass.md
+      - "36. GatherOp — A Backward That Must Accumulate, Not Overwrite": part4/36-gatherop-a-backward-that-must-accumulate-not-overwrite.md
 
 extra:
   social:
