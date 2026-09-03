@@ -99,6 +99,7 @@ nav:
       - "34. MatMulOp — A Backward Pass Built From Two More Matmuls": part4/34-matmulop-a-backward-built-from-two-more-matmuls.md
       - "35. A Two-Layer Network — Four Custom Functions, One Backward Pass": part4/35-a-two-layer-network-four-custom-functions-one-backward-pass.md
       - "36. GatherOp — A Backward That Must Accumulate, Not Overwrite": part4/36-gatherop-a-backward-that-must-accumulate-not-overwrite.md
+      - "37. MultiBlockGatherOp — When Atomics Already Solve the Cross-Block Problem": part4/37-multiblockgatherop-when-atomics-already-solve-the-cross-block-problem.md
 
 extra:
   social:
