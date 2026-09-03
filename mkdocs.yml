@@ -96,6 +96,7 @@ nav:
       - "31. A Reduction's Backward Pass — Broadcasting, Masking, and a Tie That Breaks gradcheck": part4/31-a-reductions-backward-pass-broadcasting-masking-and-a-tie-that-breaks-gradcheck.md
       - "32. Multi-Block Reductions — When Sum Has Atomics and Max Doesn't": part4/32-multi-block-reductions-when-sum-has-atomics-and-max-doesnt.md
       - "33. Ragged Tails, padding_mode, and a Blind Spot in This Book's Own Method": part4/33-ragged-tails-padding-mode-and-a-blind-spot-in-this-books-own-method.md
+      - "34. MatMulOp — A Backward Pass Built From Two More Matmuls": part4/34-matmulop-a-backward-built-from-two-more-matmuls.md
 
 extra:
   social:
