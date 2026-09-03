@@ -88,6 +88,7 @@ nav:
       - "25. Compile-Time Metaprogramming and the Last Exceptions This Book Hadn't Triggered": part2/25-compile-time-metaprogramming-and-the-last-exceptions-this-book-hadnt-triggered.md
       - "26. ct.gather and ct.scatter: General Index-Tile Memory Access": part2/26-ct-gather-and-ct-scatter-general-index-tile-memory-access.md
       - "27. Crossing the Host/Device Line with ct.function and ct.tune.exhaustive_search": part2/27-crossing-the-host-device-line-ct-function-and-ct-tune-exhaustive-search.md
+      - "28. Runtime Assertions, Debug Output, and Per-Architecture Hints — Closing Part 2": part2/28-runtime-assertions-debug-output-and-per-architecture-hints-closing-part-2.md
 
 extra:
   social:
