@@ -109,6 +109,7 @@ nav:
       - "42. Mixture-of-Experts and Multi-Head Latent Attention": part6/42-mixture-of-experts-and-multi-head-latent-attention.md
   - "Part 7 — Financial Computing Applications":
       - "43. Black-Scholes Option Pricing": part7/43-black-scholes-option-pricing.md
+      - "44. Rolling Realized Volatility": part7/44-rolling-realized-volatility.md
 
 extra:
   social:
