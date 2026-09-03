@@ -104,6 +104,8 @@ nav:
   - "Part 5 — GPU Acceleration and Performance":
       - "39. Compilation and Export Revisited — Cubin, Tile IR Bytecode, and Calling Conventions": part5/39-compilation-and-export-revisited-cubin-tile-ir-bytecode-and-calling-conventions.md
       - "40. Benchmarking Honestly With No GPU Present": part5/40-benchmarking-honestly-with-no-gpu-present.md
+  - "Part 6 — Neural Network Building Blocks":
+      - "41. Self-Attention and the Transformer Block": part6/41-self-attention-and-the-transformer-block.md
 
 extra:
   social:
