@@ -111,6 +111,7 @@ nav:
       - "43. Black-Scholes Option Pricing": part7/43-black-scholes-option-pricing.md
       - "44. Rolling Realized Volatility": part7/44-rolling-realized-volatility.md
       - "45. Monte Carlo Option Pricing": part7/45-monte-carlo-option-pricing.md
+  - Appendix: appendix/appendix-cutile-python-triton-and-a-shared-tile-ir.md
 
 extra:
   social:
