@@ -1273,6 +1273,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="part2/28-runtime-assertions-debug-output-and-per-architecture-hints-closing-part-2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    28. Runtime Assertions, Debug Output, and Per-Architecture Hints — Closing Part 2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1355,8 +1383,8 @@
 <div class="grid cards">
 <ul>
 <li>
-<p>:material-view-grid:{ .lg .middle } <strong>27 chapters and counting</strong></p>
-<p>Part 0 through Part 7, from the tile/array distinction to a Monte Carlo option pricer. This book's original outline estimated 21 chapters in total; Parts 0-2 alone have already reached 27, because real testing against the installed package kept surfacing more genuinely verifiable ground than the outline anticipated. The final count isn't fixed in advance — it's set chapter by chapter, the same way it has been since Part 0.</p>
+<p>:material-view-grid:{ .lg .middle } <strong>28 chapters and counting</strong></p>
+<p>Part 0 through Part 7, from the tile/array distinction to a Monte Carlo option pricer. This book's original outline estimated 21 chapters in total; Parts 0-2 alone reached 28 before Part 2 closed, because real testing against the installed package kept surfacing more genuinely verifiable ground than the outline anticipated. The final count isn't fixed in advance — it's set chapter by chapter, the same way it has been since Part 0.</p>
 </li>
 <li>
 <p>:material-cube-scan:{ .lg .middle } <strong>Tiles vs. arrays</strong></p>
@@ -1390,8 +1418,8 @@
 <td>The array–tile contract (<code>ArrayConstraint</code>, aliasing); divisibility and alignment hints; masking, padding, and rounding modes; the memory model (order, scope, atomics); autotuning with <code>ct.tune</code></td>
 </tr>
 <tr>
-<td><strong>Part 2 — Composing Kernels</strong></td>
-<td>Originally scoped as a handful of chapters on elementwise kernels, the tiled matmul kernel (<code>ct.matmul</code>, tensor cores), and reduction/scan kernels; grew, chapter by chapter, into seventeen (11-27) as real testing kept surfacing more ground worth covering honestly — tile-function composition and inlining, the full runtime parameter surface, reshaping, elementwise math and comparisons, bitwise operations and atomics, matmul, permute/transpose/advanced indexing, custom reductions, compile-time metaprogramming, general index-tile memory access (<code>ct.gather</code>/<code>ct.scatter</code>), and the host/device boundary with <code>ct.tune</code>'s own pre-launch validation</td>
+<td><strong>Part 2 — Composing Kernels</strong> (complete)</td>
+<td>Originally scoped as a handful of chapters on elementwise kernels, the tiled matmul kernel (<code>ct.matmul</code>, tensor cores), and reduction/scan kernels; grew, chapter by chapter, into eighteen (11-28) as real testing kept surfacing more ground worth covering honestly — tile-function composition and inlining, the full runtime parameter surface, reshaping, elementwise math and comparisons, bitwise operations and atomics, matmul, permute/transpose/advanced indexing, custom reductions, compile-time metaprogramming, general index-tile memory access (<code>ct.gather</code>/<code>ct.scatter</code>), the host/device boundary with <code>ct.tune</code>'s own pre-launch validation, and closing out with runtime assertions, debug output, and per-architecture compiler hints</td>
 </tr>
 <tr>
 <td><strong>Part 3 — Wiring Into PyTorch's Autograd</strong></td>
