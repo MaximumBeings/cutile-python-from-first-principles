@@ -2089,6 +2089,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="appendix/appendix-cutile-python-triton-and-a-shared-tile-ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2227,7 +2254,7 @@
 <p>Start with <a href="getting-started/">Getting Started</a> to stand up a cuTile Python environment, or jump straight into <a href="part0/01-arrays-tiles-and-the-kernel-boundary/">Part 0: cuTile Foundations</a> if it's already installed.</p>
 <div class="admonition note">
 <p class="admonition-title">How this book relates to its siblings</p>
-<p>Mojo, CUDA C++, and Rust all build their own tensor type and their own autodiff engine because none of them has anything else to lean on for this kind of from-scratch teaching arc. Triton deliberately does neither — it owns only the kernel and leans on PyTorch for the tensor, the device, and the autograd graph. cuTile Python follows Triton's arc, not Mojo/CUDA/Rust's: it has no built-in tensor abstraction and no autograd engine of its own, so this book doesn't build either — it builds kernels against PyTorch's, the same seam the Triton book uses. What's genuinely new here, with no equivalent in any of the four siblings, is the tile/array type split as a first-class language feature, and a compilation model where ahead-of-time export to a named target architecture is itself real, runnable, driver-free evidence — closer to what <code>nvcc</code> gives the CUDA book, but for a Python-hosted DSL. cuTile Python and Triton are also not unrelated projects sharing a family resemblance by accident: NVIDIA has built a Tile IR backend for Triton itself, so the same compiler infrastructure this book's kernels compile to is also, as of 2026, one of Triton's own compilation targets — a relationship this book's closing appendix examines directly, including the public disagreement between NVIDIA and Triton's original creators over it.</p>
+<p>Mojo, CUDA C++, and Rust all build their own tensor type and their own autodiff engine because none of them has anything else to lean on for this kind of from-scratch teaching arc. Triton deliberately does neither — it owns only the kernel and leans on PyTorch for the tensor, the device, and the autograd graph. cuTile Python follows Triton's arc, not Mojo/CUDA/Rust's: it has no built-in tensor abstraction and no autograd engine of its own, so this book doesn't build either — it builds kernels against PyTorch's, the same seam the Triton book uses. What's genuinely new here, with no equivalent in any of the four siblings, is the tile/array type split as a first-class language feature, and a compilation model where ahead-of-time export to a named target architecture is itself real, runnable, driver-free evidence — closer to what <code>nvcc</code> gives the CUDA book, but for a Python-hosted DSL. cuTile Python and Triton are also not unrelated projects sharing a family resemblance by accident: NVIDIA has built a Tile IR backend for Triton itself, so the same compiler infrastructure this book's kernels compile to is also, as of 2026, one of Triton's own compilation targets — a relationship this book's closing appendix examines directly, including how a CUDA-team veteran publicly read cuTile as competitive positioning against Triton, even as Triton's own creator continues to co-publish with NVIDIA on Triton's own hardware support.</p>
 </div>
 
 
