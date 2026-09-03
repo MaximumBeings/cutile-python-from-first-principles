@@ -82,6 +82,7 @@ nav:
       - "19. Bitwise Operations and a Docstring That Overpromises": part2/19-bitwise-operations-and-a-docstring-that-overpromises.md
       - "20. Atomics and Memory Another Block Might Be Touching": part2/20-atomics-and-memory-another-block-might-be-touching.md
       - "21. Matrix Multiplication and the Limits of sm_90": part2/21-matrix-multiplication-and-the-limits-of-sm_90.md
+      - "22. Permute, Transpose, and the Two Checks Behind cat": part2/22-permute-transpose-and-the-two-checks-behind-cat.md
 
 extra:
   social:
