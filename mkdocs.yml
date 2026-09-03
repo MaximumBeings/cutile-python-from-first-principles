@@ -103,6 +103,7 @@ nav:
       - "38. AddBiasOp — A Broadcast Forward Needs an Unbroadcast Backward": part4/38-addbiasop-a-broadcast-forward-needs-an-unbroadcast-backward.md
   - "Part 5 — GPU Acceleration and Performance":
       - "39. Compilation and Export Revisited — Cubin, Tile IR Bytecode, and Calling Conventions": part5/39-compilation-and-export-revisited-cubin-tile-ir-bytecode-and-calling-conventions.md
+      - "40. Benchmarking Honestly With No GPU Present": part5/40-benchmarking-honestly-with-no-gpu-present.md
 
 extra:
   social:
