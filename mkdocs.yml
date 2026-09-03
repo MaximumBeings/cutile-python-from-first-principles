@@ -97,6 +97,7 @@ nav:
       - "32. Multi-Block Reductions — When Sum Has Atomics and Max Doesn't": part4/32-multi-block-reductions-when-sum-has-atomics-and-max-doesnt.md
       - "33. Ragged Tails, padding_mode, and a Blind Spot in This Book's Own Method": part4/33-ragged-tails-padding-mode-and-a-blind-spot-in-this-books-own-method.md
       - "34. MatMulOp — A Backward Pass Built From Two More Matmuls": part4/34-matmulop-a-backward-built-from-two-more-matmuls.md
+      - "35. A Two-Layer Network — Four Custom Functions, One Backward Pass": part4/35-a-two-layer-network-four-custom-functions-one-backward-pass.md
 
 extra:
   social:
