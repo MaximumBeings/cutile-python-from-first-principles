@@ -85,6 +85,7 @@ nav:
       - "22. Permute, Transpose, and the Two Checks Behind cat": part2/22-permute-transpose-and-the-two-checks-behind-cat.md
       - "23. Advanced Indexing and the Escape Hatch Chapter 19 Promised": part2/23-advanced-indexing-and-the-escape-hatch-chapter-19-promised.md
       - "24. Custom Reductions and a Confound This Book Had Not Met Yet": part2/24-custom-reductions-and-a-confound-this-book-had-not-met-yet.md
+      - "25. Compile-Time Metaprogramming and the Last Exceptions This Book Hadn't Triggered": part2/25-compile-time-metaprogramming-and-the-last-exceptions-this-book-hadnt-triggered.md
 
 extra:
   social:
