@@ -86,6 +86,7 @@ nav:
       - "23. Advanced Indexing and the Escape Hatch Chapter 19 Promised": part2/23-advanced-indexing-and-the-escape-hatch-chapter-19-promised.md
       - "24. Custom Reductions and a Confound This Book Had Not Met Yet": part2/24-custom-reductions-and-a-confound-this-book-had-not-met-yet.md
       - "25. Compile-Time Metaprogramming and the Last Exceptions This Book Hadn't Triggered": part2/25-compile-time-metaprogramming-and-the-last-exceptions-this-book-hadnt-triggered.md
+      - "26. ct.gather and ct.scatter: General Index-Tile Memory Access": part2/26-ct-gather-and-ct-scatter-general-index-tile-memory-access.md
 
 extra:
   social:
