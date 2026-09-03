@@ -91,6 +91,8 @@ nav:
       - "28. Runtime Assertions, Debug Output, and Per-Architecture Hints — Closing Part 2": part2/28-runtime-assertions-debug-output-and-per-architecture-hints-closing-part-2.md
   - "Part 3 — Wiring Into PyTorch's Autograd":
       - "29. torch.autograd.Function as the Graph Node — Part 3 Begins": part3/29-torch-autograd-function-as-the-graph-node-part-3-begins.md
+  - "Part 4 — The Backward Kernel":
+      - "30. Writing the Backward Kernel — Part 4 Begins": part4/30-writing-the-backward-kernel-part-4-begins.md
 
 extra:
   social:
