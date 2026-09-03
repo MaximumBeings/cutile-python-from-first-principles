@@ -101,6 +101,8 @@ nav:
       - "36. GatherOp — A Backward That Must Accumulate, Not Overwrite": part4/36-gatherop-a-backward-that-must-accumulate-not-overwrite.md
       - "37. MultiBlockGatherOp — When Atomics Already Solve the Cross-Block Problem": part4/37-multiblockgatherop-when-atomics-already-solve-the-cross-block-problem.md
       - "38. AddBiasOp — A Broadcast Forward Needs an Unbroadcast Backward": part4/38-addbiasop-a-broadcast-forward-needs-an-unbroadcast-backward.md
+  - "Part 5 — GPU Acceleration and Performance":
+      - "39. Compilation and Export Revisited — Cubin, Tile IR Bytecode, and Calling Conventions": part5/39-compilation-and-export-revisited-cubin-tile-ir-bytecode-and-calling-conventions.md
 
 extra:
   social:
